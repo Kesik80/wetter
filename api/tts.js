@@ -1,4 +1,3 @@
-// api/tts.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -10,17 +9,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Text and ID required' });
   }
 
-  // ═══════════════════════════════════════════════════
-  // ТВОИ ДАННЫЕ:
+  // ТВОИ ДАННЫЕ (уже прописаны):
   const REPO_OWNER = 'kesik80';
   const REPO_NAME = 'wetter';
-  // ═══════════════════════════════════════════════════
-
+  
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
   const ELEVEN_API_KEY = process.env.ELEVENLABS_API_KEY;
-  const AUDIO_PATH = `audio/weather_${id}.mp3`;
+  const AUDIO_PATH = `audio/${id}.mp3`;
 
-  // Проверка ключей
   if (!ELEVEN_API_KEY) {
     return res.status(500).json({ error: 'ELEVENLABS_API_KEY not configured' });
   }
@@ -41,7 +37,6 @@ export default async function handler(req, res) {
       }
     );
 
-    // Если файл существует - возвращаем его URL
     if (checkRes.status === 200) {
       const fileData = await checkRes.json();
       return res.json({ 
@@ -51,7 +46,7 @@ export default async function handler(req, res) {
     }
 
     // 2. Генерируем аудио через ElevenLabs
-    const elevenRes = await fetch('https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB', {
+ const elevenRes = await fetch('https://api.elevenlabs.io/v1/text-to-speech/rDmv3mOhK6TnhYWckFaD', {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
@@ -70,7 +65,7 @@ export default async function handler(req, res) {
 
     if (!elevenRes.ok) {
       const errorText = await elevenRes.text();
-      throw new Error(`ElevenLabs error: ${elevenRes.status} - ${errorText}`);
+      throw new Error(`ElevenLabs error: ${elevenRes.status}`);
     }
 
     const audioBuffer = await elevenRes.arrayBuffer();
@@ -97,7 +92,7 @@ export default async function handler(req, res) {
 
     if (!createRes.ok) {
       const ghError = await createRes.text();
-      throw new Error(`GitHub error: ${createRes.status} - ${ghError}`);
+      throw new Error(`GitHub error: ${createRes.status}`);
     }
 
     const result = await createRes.json();
