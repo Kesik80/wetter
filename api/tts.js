@@ -10,11 +10,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Text and ID required' });
   }
 
+  // ═══════════════════════════════════════════════════
+  // ТВОИ ДАННЫЕ:
+  const REPO_OWNER = 'kesik80';
+  const REPO_NAME = 'wetter';
+  // ═══════════════════════════════════════════════════
+
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
   const ELEVEN_API_KEY = process.env.ELEVENLABS_API_KEY;
-  const REPO_OWNER = 'твой-username'; // замени
-  const REPO_NAME = 'твой-репозиторий'; // замени
   const AUDIO_PATH = `audio/weather_${id}.mp3`;
+
+  // Проверка ключей
+  if (!ELEVEN_API_KEY) {
+    return res.status(500).json({ error: 'ELEVENLABS_API_KEY not configured' });
+  }
+  if (!GITHUB_TOKEN) {
+    return res.status(500).json({ error: 'GITHUB_TOKEN not configured' });
+  }
 
   try {
     // 1. Проверяем, есть ли уже файл в репозитории
@@ -22,8 +34,9 @@ export default async function handler(req, res) {
       `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${AUDIO_PATH}`,
       {
         headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json'
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'X-GitHub-Api-Version': '2022-11-28'
         }
       }
     );
@@ -56,7 +69,8 @@ export default async function handler(req, res) {
     });
 
     if (!elevenRes.ok) {
-      throw new Error(`ElevenLabs error: ${elevenRes.status}`);
+      const errorText = await elevenRes.text();
+      throw new Error(`ElevenLabs error: ${elevenRes.status} - ${errorText}`);
     }
 
     const audioBuffer = await elevenRes.arrayBuffer();
@@ -68,12 +82,13 @@ export default async function handler(req, res) {
       {
         method: 'PUT',
         headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
           'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28'
         },
         body: JSON.stringify({
-          message: `Add TTS audio for: ${text.substring(0, 50)}...`,
+          message: `Add TTS: ${text.substring(0, 50)}...`,
           content: base64Audio,
           branch: 'main'
         })
@@ -81,7 +96,8 @@ export default async function handler(req, res) {
     );
 
     if (!createRes.ok) {
-      throw new Error(`GitHub error: ${createRes.status}`);
+      const ghError = await createRes.text();
+      throw new Error(`GitHub error: ${createRes.status} - ${ghError}`);
     }
 
     const result = await createRes.json();
@@ -96,3 +112,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
