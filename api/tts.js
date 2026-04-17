@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     }
 
     // Генерируем через ElevenLabs - СТАНДАРТНЫЙ ГОЛОС (бесплатный)
-    const voiceId = 'uvysWDLbKpA4XvpD3GI6'; // Bella
+    const voiceId = 'EXAVITQu4vr4xnSDxMaL'; // Bella
     const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
