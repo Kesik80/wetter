@@ -44,30 +44,24 @@ export default async function handler(req, res) {
       return res.json({ url: fileData.download_url, cached: true });
     }
 
-    // Генерируем через ElevenLabs - используем v3
-    // Генерируем через ElevenLabs
-const voiceId = 'pNInz6obpgDQGcFmaJgB'; // Adam
-const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-  method: 'POST',
-  headers: {
-    'Accept': 'audio/mpeg',
-    'Content-Type': 'application/json',
-    'xi-api-key': ELEVEN_API_KEY
-  },
-  body: JSON.stringify({
-    text: text,
-    model_id: 'eleven_multilingual_v3', //
-    voice_settings: {
-      stability: 0.5,
-      similarity_boost: 0.75,
-      style: 0.0,            // ОБЯЗАТЕЛЬНО для модели V3
-      use_speaker_boost: true // Рекомендуется для V3
-    }
-  })
-});
-
-
-
+    // Генерируем через ElevenLabs - СТАНДАРТНЫЙ ГОЛОС (бесплатный)
+    const voiceId = ' EXAVITQu4vr4xnSDxMaL'; // Bella
+    const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'audio/mpeg',
+        'Content-Type': 'application/json',
+        'xi-api-key': ELEVEN_API_KEY
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75
+        }
+      })
+    });
 
     if (!elevenRes.ok) {
       const errorText = await elevenRes.text();
