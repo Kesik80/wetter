@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     }
 
     // Генерируем через ElevenLabs - СТАНДАРТНЫЙ ГОЛОС (бесплатный)
-    const voiceId = 'pNInz6obpgDQGcFmaJgB'; // Adam
+    const voiceId = 'D38z5qC9Oq9Vmd6ouFJK'; // Adam
     const elevenRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         text: text,
-        model_id: 'eleven_multilingual_v3',
+        model_id: 'eleven_multilingual_v2',
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.75
