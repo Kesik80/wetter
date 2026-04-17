@@ -9,12 +9,15 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Text and ID required' });
   }
 
+  // Безопасное имя файла
+  const safeId = id.replace(/[^a-z0-9_-]/gi, '').substring(0, 50);
+
   const REPO_OWNER = 'kesik80';
   const REPO_NAME = 'wetter';
   
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
   const ELEVEN_API_KEY = process.env.ELEVENLABS_API_KEY;
-  const AUDIO_PATH = `audio/${id}.mp3`;
+  const AUDIO_PATH = `audio/${safeId}.mp3`;
 
   if (!ELEVEN_API_KEY) {
     return res.status(500).json({ error: 'ELEVENLABS_API_KEY not configured' });
@@ -24,7 +27,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Проверяем кэш в GitHub
+    // Проверяем кэш
     const checkRes = await fetch(
       `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${AUDIO_PATH}`,
       {
@@ -41,7 +44,7 @@ export default async function handler(req, res) {
       return res.json({ url: fileData.download_url, cached: true });
     }
 
-    // 2. Генерируем через ElevenLabs
+    // Генерируем аудио
     const elevenRes = await fetch('https://api.elevenlabs.io/v1/text-to-speech/rDmv3mOhK6TnhYWckFaD', {
       method: 'POST',
       headers: {
@@ -52,26 +55,19 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         text: text,
         model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75
-        }
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
       })
     });
 
     if (!elevenRes.ok) {
       const errorText = await elevenRes.text();
-      return res.status(500).json({ 
-        error: 'ElevenLabs error', 
-        status: elevenRes.status,
-        details: errorText 
-      });
+      return res.status(500).json({ error: 'ElevenLabs error', status: elevenRes.status, details: errorText });
     }
 
     const audioBuffer = await elevenRes.arrayBuffer();
     const base64Audio = Buffer.from(audioBuffer).toString('base64');
 
-    // 3. Сохраняем в GitHub
+    // Сохраняем в GitHub
     const createRes = await fetch(
       `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${AUDIO_PATH}`,
       {
@@ -91,19 +87,11 @@ export default async function handler(req, res) {
     );
 
     if (!createRes.ok) {
-      const ghError = await createRes.text();
-      return res.status(500).json({ 
-        error: 'GitHub error', 
-        status: createRes.status 
-      });
+      return res.status(500).json({ error: 'GitHub error', status: createRes.status });
     }
 
     const result = await createRes.json();
-    
-    return res.json({ 
-      url: result.content.download_url, 
-      cached: false 
-    });
+    return res.json({ url: result.content.download_url, cached: false });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
