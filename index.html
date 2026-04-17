@@ -136,24 +136,315 @@ body.ru-mode .card-back{border-color:rgba(79,195,247,0.2)}
 <div class="tts-status" id="tts-status"></div>
 <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
 <script>
-const API_URL='https://wetter-lernen.vercel.app/api/tts';
-const data={wetter:[{de:'das Wetter',ru:'погода'},{de:'die Sonne',ru:'солнце'},{de:'der Regen',ru:'дождь'},{de:'der Schnee',ru:'снег'},{de:'der Wind',ru:'ветер'},{de:'der Sturm',ru:'буря, шторм'},{de:'der Nebel',ru:'туман'},{de:'das Gewitter',ru:'гроза'},{de:'der Blitz',ru:'молния'},{de:'der Donner',ru:'гром'},{de:'der Hagel',ru:'град'},{de:'die Wolke',ru:'облако'},{de:'bewölkt',ru:'облачно'},{de:'sonnig',ru:'солнечно'},{de:'regnerisch',ru:'дождливо'},{de:'windig',ru:'ветрено'},{de:'neblig',ru:'туманно'},{de:'warm / kalt',ru:'тепло / холодно'},{de:'heiß',ru:'жарко'},{de:'feucht',ru:'влажно'},{de:'trocken',ru:'сухо'},{de:'die Feuchtigkeit',ru:'влажность'},{de:'es regnet',ru:'идёт дождь'},{de:'es schneit',ru:'идёт снег'},{de:'es friert',ru:'морозит'}],vorhersage:[{de:'die Wettervorhersage',ru:'прогноз погоды'},{de:'der Wetterbericht',ru:'метеосводка'},{de:'die Temperatur',ru:'температура'},{de:'die Luftfeuchtigkeit',ru:'влажность воздуха'},{de:'die relative Luftfeuchtigkeit',ru:'относительная влажность'},{de:'der Luftdruck',ru:'атмосферное давление'},{de:'die Niederschläge',ru:'осадки'},{de:'die Regenwahrscheinlichkeit',ru:'вероятность дождя'},{de:'die Höchsttemperatur',ru:'максимальная температура'},{de:'die Tiefsttemperatur',ru:'минимальная температура'},{de:'der Grad',ru:'градус'},{de:'laut Vorhersage',ru:'согласно прогнозу'},{de:'morgen / übermorgen',ru:'завтра / послезавтра'},{de:'die Windgeschwindigkeit',ru:'скорость ветра'},{de:'die Windrichtung',ru:'направление ветра'},{ ветра'},{de:'die Sichtweite',ru:'видимость'}],richtung:[{de:'die Himmelsrichtung',ru:'сторона света'},{de:'der Norden (N)',ru:'север'},{de:'der Süden (S)',ru:'юг'},{de:'der Osten (O)',ru:'восток'},{de:'der Westen (W)',ru:'запад'},{de:'der Nordosten (NO)',ru:'северо-восток'},{de:'der Nordwesten (NW)',ru:'северо-запад'},{de:'der Südosten (SO)',ru:'юго-восток'},{de:'der Südwesten (SW)',ru:'юго-запад'},{de:'nördlich / südlich',ru:'северный / южный'},{de:'östlich / westlich',ru:'восточный / западный'},{de:'aus dem Norden',ru:'с севера'},{de:'nach Süden',ru:'на юг'},{de:'der Wind weht aus…',ru:'ветер дует из…'}],temp:[{de:'Die Temperatur steigt',ru:'Температура повышается'},{de:'Die Temperatur fällt',ru:'Температура падает'},{de:'Die Temperatur sinkt',ru:'Температура снижается'},{de:'steigt auf +20 Grad',ru:'поднимается до +20 градусов'},{de:'sinkt auf −5 Grad',ru:'опускается до −5 градусов'},{de:'Es wird wärmer',ru:'Становится теплее'},{de:'Es wird kälter',ru:'Становится холоднее'},{de:'deutlich steigen',ru:'заметно повышаться'},{de:'stark fallen',ru:'резко падать'},{de:'der Temperaturanstieg',ru:'повышение температуры'},{de:'der Temperaturrückgang',ru:'падение температуры'},{de:'schwanken',ru:'колебаться'},{de:'steigen',ru:'подниматься, расти'},{de:'sinken',ru:'снижаться, опускаться'}],phrases:[{de:'Es ist mit Regen zu rechnen.',ru:'Следует ожидать дождя.'},{de:'Die Temperaturen liegen bei 15 Grad.',ru:'Температура составит около 15 градусов.'},{de:'Es bleibt trocken und sonnig.',ru:'Остаётся сухо и солнечно.'},{de:'Im Norden zieht eine Kaltfront durch.',ru:'На севере проходит холодный фронт.'},{de:'Örtlich kann es zu Gewittern kommen.',ru:'Местами возможны грозы.'},{de:'Die Luftfeuchtigkeit beträgt 80%.',ru:'Влажность воздуха составляет 80%.'},{de:'Der Wind weht aus westlicher Richtung.',ru:'Ветер дует с западного направления.'},{de:'Es werden Böen bis 60 km/h erwartet.',ru:'Ожидаются порывы ветра до 60 км/ч.'},{de:'Die Sonne scheint bei bis zu 22 Grad.',ru:'Солнечно, температура до 22 градусов.'},{de:'Nachts kühlt es auf 5 Grad ab.',ru:'Ночью похолодает до 5 градусов.'},{de:'Es ist mit Schneefall zu rechnen.',ru:'Следует ожидать снегопада.'},{de:'Teils bewölkt, teils heiter.',ru:'Местами облачно, местами ясно.'},{de:'Eine Warmfront bringt milde Luft.',ru:'Тёплый фронт приносит мягкий воздух.'},{de:'Der Regen lässt im Laufe des Tages nach.',ru:'Дождь стихает в течение дня.'},{de:'Nebel löst sich am Vormittag auf.',ru:'Туман рассеивается в первой половине дня.'},{de:'Es wird schwül und drückend.',ru:'Становится душно и знойно.'}],alltag:[{de:'Das Wetter ist heute sehr schön!',ru:'Сегодня очень хорошая погода!'},{de:'Was für ein schlechtes Wetter heute!',ru:'Какая сегодня плохая погода!'},{de:'Wie ist das Wetter heute?',ru:'Какая сегодня погода?'},{de:'Es ist kalt draußen, zieh dich warm an!',ru:'На улице холодно, оденься потеплее!'},{de:'Nimm einen Regenschirm mit, es kann regnen.',ru:'Возьми зонт, может пойти дождь.'},{de:'Endlich scheint die Sonne wieder!',ru:'Наконец-то снова светит солнце!'},{de:'Es hat die ganze Nacht geregnet.',ru:'Всю ночь шёл дождь.'},{de:'Heute soll es schneien.',ru:'Сегодня должен пойти снег.'},{de:'Mir ist kalt / warm.',ru:'Мне холодно / тепло.'},{de:'Der Sommer war dieses Jahr sehr heiß.',ru:'Лето в этом году было очень жарким.'},{de:'Der Frühling kommt endlich!',ru:'Весна наконец-то приходит!'},{de:'Es ist so ein herrlicher Tag heute!',ru:'Сегодня такой замечательный день!'},{de:'Ich mag den Regen nicht.',ru:'Мне не нравится дождь.'},{de:'Ich liebe Schnee!',ru:'Я люблю снег!'},{de:'Wie wird das Wetter morgen?',ru:'Какая завтра будет погода?'},{de:'Heute Abend kann es Gewitter geben.',ru:'Сегодня вечером возможна гроза.'},{de:'Es ist wieder so ein trüber Tag.',ru:'Снова такой пасмурный день.'},{de:'Der Wind ist heute wirklich stark.',ru:'Ветер сегодня действительно сильный.'},{de:'Es friert — pass auf dem Glatteis auf!',ru:'Морозит — осторожно на льду!'},{de:'Was für eine Hitze! Ich schmelze.',ru:'Какая жара! Я плавлюсь.'},{de:'Hast du die Wettervorhersage gesehen?',ru:'Ты видел прогноз погоды?'},{de:'Im Winter wird es früh dunkel.',ru:'Зимой рано темнеет.'},{de:'Nach dem Regen kommt Sonnenschein.',ru:'После дождя выйдет солнце. (посл.)'},{de:'Es ist typisch für diese Jahreszeit.',ru:'Это типично для этого времени года.'}]};
-const allTabs=['wetter','vorhersage','richtung','temp','phrases','alltag'];
-const flippedState={};
-allTabs.forEach(t=>flippedState[t]={});
-let ruMode=false;
-const audioCache={};
-function sanitizeFilename(text){let clean=text.toLowerCase().replace(/^(der |die |das |den |dem |des )/i,'').replace(/[ä]/g,'ae').replace(/[ö]/g,'oe').replace(/[ü]/g,'ue').replace(/[ß]/g,'ss').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'_');const shortHash=Math.random().toString(36).substring(2,6);return`${clean.substring(0,40)}_${shortHash}`}
-function showStatus(msg){const el=document.getElementById('tts-status');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000)}
-async function speakDE(text,btn){const id=sanitizeFilename(text);if(btn){btn.textContent='⏳';btn.disabled=true}try{if(audioCache[id]){playAudio(audioCache[id],btn);return}showStatus('Загрузка...');const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,id})});if(!response.ok){const error=await response.text();throw new Error(`API error: ${response.status}`)}const{url,cached}=await response.json();audioCache[id]=url;showStatus(cached?'Из кэша ✓':'Сгенерировано ✓');playAudio(url,btn)}catch(error){console.error('TTS Error:',error);showStatus('Ошибка, fallback');if(btn){btn.textContent='🔊';btn.disabled=false}fallbackSpeak(text,btn)}}
-function playAudio(url,btn){const audio=new Audio(url);audio.onplay=()=>{if(btn){btn.textContent='🔊';btn.classList.add('speaking');btn.disabled=false}};audio.onended=()=>{if(btn)btn.classList.remove('speaking')};audio.onerror=()=>{console.error('Audio error:',url);if(btn){btn.textContent='🔊';btn.classList.remove('speaking');btn.disabled=false}};audio.play().catch(e=>{console.error('Play failed:',e);if(btn){btn.textContent='🔊';btn.disabled=false}})}
-function fallbackSpeak(text,btn){if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const utt=new SpeechSynthesisUtterance(text);utt.lang='de-DE';utt.rate=0.88;if(btn){btn.classList.add('speaking');utt.onend=()=>btn.classList.remove('speaking');utt.onerror=()=>btn.classList.remove('speaking')}window.speechSynthesis.speak(utt)}
-function buildGrid(tab){const isPhrase=tab==='phrases'||tab==='alltag';const grid=document.getElementById('grid-'+tab);grid.innerHTML='';flippedState[tab]={};data[tab].forEach((item,i)=>{const front=ruMode?item.ru:item.de;const back=ruMode?item.de:item.ru;const backSub=ruMode?item.ru:item.de;const wrap=document.createElement('div');wrap.className=isPhrase?'phrase-wrap':'card-wrap';wrap.style.position='relative';wrap.innerHTML=`<div class="card-inner"><div class="card-front"><div class="primary">${front}</div><div class="hint">нажми — увидишь перевод</div></div><div class="card-back"><div class="secondary">${back}</div><div class="sub">${backSub}</div></div></div>`;const btn=document.createElement('button');btn.className='speak-btn';btn.title='Произнести по-немецки';btn.textContent='🔊';btn.addEventListener('click',e=>{e.stopPropagation();speakDE(item.de,btn)});wrap.appendChild(btn);wrap.addEventListener('click',()=>{wrap.classList.toggle('flipped');flippedState[tab][i]=wrap.classList.contains('flipped');updateCounter(tab);updateProgress()});grid.appendChild(wrap)});updateCounter(tab)}
-function updateCounter(tab){const total=data[tab].length;const seen=Object.values(flippedState[tab]).filter(Boolean).length;document.getElementById('counter-'+tab).innerHTML=`Открыто: <b>${seen}</b> из ${total}`}
-function updateProgress(){let total=0,seen=0;for(const tab of allTabs){total+=data[tab].length;seen+=Object.values(flippedState[tab]).filter(Boolean).length}document.getElementById('progress').style.width=(seen/total*100)+'%'}
-function toggleDirection(){ruMode=document.getElementById('dirSwitch').checked;document.body.classList.toggle('ru-mode',ruMode);document.getElementById('lbl-de').classList.toggle('active',!ruMode);document.getElementById('lbl-ru').classList.toggle('active',ruMode);allTabs.forEach(t=>{flippedState[t]={};buildGrid(t)});updateProgress()}
-function showTab(tab){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');document.querySelectorAll('.tab-btn')[allTabs.indexOf(tab)].classList.add('active')}
-allTabs.forEach(t=>buildGrid(t));updateProgress();
+const API_URL = 'https://wetter-lernen.vercel.app/api/tts';
+
+const data = {
+  wetter: [
+    { de: 'das Wetter', ru: 'погода' },
+    { de: 'die Sonne', ru: 'солнце' },
+    { de: 'der Regen', ru: 'дождь' },
+    { de: 'der Schnee', ru: 'снег' },
+    { de: 'der Wind', ru: 'ветер' },
+    { de: 'der Sturm', ru: 'буря, шторм' },
+    { de: 'der Nebel', ru: 'туман' },
+    { de: 'das Gewitter', ru: 'гроза' },
+    { de: 'der Blitz', ru: 'молния' },
+    { de: 'der Donner', ru: 'гром' },
+    { de: 'der Hagel', ru: 'град' },
+    { de: 'die Wolke', ru: 'облако' },
+    { de: 'bewölkt', ru: 'облачно' },
+    { de: 'sonnig', ru: 'солнечно' },
+    { de: 'regnerisch', ru: 'дождливо' },
+    { de: 'windig', ru: 'ветрено' },
+    { de: 'neblig', ru: 'туманно' },
+    { de: 'warm / kalt', ru: 'тепло / холодно' },
+    { de: 'heiß', ru: 'жарко' },
+    { de: 'feucht', ru: 'влажно' },
+    { de: 'trocken', ru: 'сухо' },
+    { de: 'die Feuchtigkeit', ru: 'влажность' },
+    { de: 'es regnet', ru: 'идёт дождь' },
+    { de: 'es schneit', ru: 'идёт снег' },
+    { de: 'es friert', ru: 'морозит' }
+  ],
+  vorhersage: [
+    { de: 'die Wettervorhersage', ru: 'прогноз погоды' },
+    { de: 'der Wetterbericht', ru: 'метеосводка' },
+    { de: 'die Temperatur', ru: 'температура' },
+    { de: 'die Luftfeuchtigkeit', ru: 'влажность воздуха' },
+    { de: 'die relative Luftfeuchtigkeit', ru: 'относительная влажность' },
+    { de: 'der Luftdruck', ru: 'атмосферное давление' },
+    { de: 'die Niederschläge', ru: 'осадки' },
+    { de: 'die Regenwahrscheinlichkeit', ru: 'вероятность дождя' },
+    { de: 'die Höchsttemperatur', ru: 'максимальная температура' },
+    { de: 'die Tiefsttemperatur', ru: 'минимальная температура' },
+    { de: 'der Grad', ru: 'градус' },
+    { de: 'laut Vorhersage', ru: 'согласно прогнозу' },
+    { de: 'morgen / übermorgen', ru: 'завтра / послезавтра' },
+    { de: 'die Windgeschwindigkeit', ru: 'скорость ветра' },
+    { de: 'die Windrichtung', ru: 'направление ветра' },
+    { de: 'die Sichtweite', ru: 'видимость' }
+  ],
+  richtung: [
+    { de: 'die Himmelsrichtung', ru: 'сторона света' },
+    { de: 'der Norden (N)', ru: 'север' },
+    { de: 'der Süden (S)', ru: 'юг' },
+    { de: 'der Osten (O)', ru: 'восток' },
+    { de: 'der Westen (W)', ru: 'запад' },
+    { de: 'der Nordosten (NO)', ru: 'северо-восток' },
+    { de: 'der Nordwesten (NW)', ru: 'северо-запад' },
+    { de: 'der Südosten (SO)', ru: 'юго-восток' },
+    { de: 'der Südwesten (SW)', ru: 'юго-запад' },
+    { de: 'nördlich / südlich', ru: 'северный / южный' },
+    { de: 'östlich / westlich', ru: 'восточный / западный' },
+    { de: 'aus dem Norden', ru: 'с севера' },
+    { de: 'nach Süden', ru: 'на юг' },
+    { de: 'der Wind weht aus…', ru: 'ветер дует из…' }
+  ],
+  temp: [
+    { de: 'Die Temperatur steigt', ru: 'Температура повышается' },
+    { de: 'Die Temperatur fällt', ru: 'Температура падает' },
+    { de: 'Die Temperatur sinkt', ru: 'Температура снижается' },
+    { de: 'steigt auf +20 Grad', ru: 'поднимается до +20 градусов' },
+    { de: 'sinkt auf −5 Grad', ru: 'опускается до −5 градусов' },
+    { de: 'Es wird wärmer', ru: 'Становится теплее' },
+    { de: 'Es wird kälter', ru: 'Становится холоднее' },
+    { de: 'deutlich steigen', ru: 'заметно повышаться' },
+    { de: 'stark fallen', ru: 'резко падать' },
+    { de: 'der Temperaturanstieg', ru: 'повышение температуры' },
+    { de: 'der Temperaturrückgang', ru: 'падение температуры' },
+    { de: 'schwanken', ru: 'колебаться' },
+    { de: 'steigen', ru: 'подниматься, расти' },
+    { de: 'sinken', ru: 'снижаться, опускаться' }
+  ],
+  phrases: [
+    { de: 'Es ist mit Regen zu rechnen.', ru: 'Следует ожидать дождя.' },
+    { de: 'Die Temperaturen liegen bei 15 Grad.', ru: 'Температура составит около 15 градусов.' },
+    { de: 'Es bleibt trocken und sonnig.', ru: 'Остаётся сухо и солнечно.' },
+    { de: 'Im Norden zieht eine Kaltfront durch.', ru: 'На севере проходит холодный фронт.' },
+    { de: 'Örtlich kann es zu Gewittern kommen.', ru: 'Местами возможны грозы.' },
+    { de: 'Die Luftfeuchtigkeit beträgt 80%.', ru: 'Влажность воздуха составляет 80%.' },
+    { de: 'Der Wind weht aus westlicher Richtung.', ru: 'Ветер дует с западного направления.' },
+    { de: 'Es werden Böen bis 60 km/h erwartet.', ru: 'Ожидаются порывы ветра до 60 км/ч.' },
+    { de: 'Die Sonne scheint bei bis zu 22 Grad.', ru: 'Солнечно, температура до 22 градусов.' },
+    { de: 'Nachts kühlt es auf 5 Grad ab.', ru: 'Ночью похолодает до 5 градусов.' },
+    { de: 'Es ist mit Schneefall zu rechnen.', ru: 'Следует ожидать снегопада.' },
+    { de: 'Teils bewölкт, teils heiter.', ru: 'Местами облачно, местами ясно.' },
+    { de: 'Eine Warmfront bringt milde Luft.', ru: 'Тёплый фронт приносит мягкий воздух.' },
+    { de: 'Der Regen lässt im Laufe des Tages nach.', ru: 'Дождь стихает в течение дня.' },
+    { de: 'Nebel löst sich am Vormittag auf.', ru: 'Туман рассеивается в первой половине дня.' },
+    { de: 'Es wird schwül und drückend.', ru: 'Становится душно и знойно.' }
+  ],
+  alltag: [
+    { de: 'Das Wetter ist heute sehr schön!', ru: 'Сегодня очень хорошая погода!' },
+    { de: 'Was für ein schlechtes Wetter heute!', ru: 'Какая сегодня плохая погода!' },
+    { de: 'Wie ist das Wetter heute?', ru: 'Какая сегодня погода?' },
+    { de: 'Es ist kalt draußen, zieh dich warm an!', ru: 'На улице холодно, оденься потеплее!' },
+    { de: 'Nimm einen Regenschirm mit, es kann regnen.', ru: 'Возьми зонт, может пойти дождь.' },
+    { de: 'Endlich scheint die Sonne wieder!', ru: 'Наконец-то снова светит солнце!' },
+    { de: 'Es hat die ganze Nacht geregnet.', ru: 'Всю ночь шёл дождь.' },
+    { de: 'Heute soll es schneien.', ru: 'Сегодня должен пойти снег.' },
+    { de: 'Mir ist kalt / warm.', ru: 'Мне холодно / тепло.' },
+    { de: 'Der Sommer war dieses Jahr sehr heiß.', ru: 'Лето в этом году было очень жарким.' },
+    { de: 'Der Frühling kommt endlich!', ru: 'Весна наконец-то приходит!' },
+    { de: 'Es ist so ein herrlicher Tag heute!', ru: 'Сегодня такой замечательный день!' },
+    { de: 'Ich mag den Regen nicht.', ru: 'Мне не нравится дождь.' },
+    { de: 'Ich liebe Schnee!', ru: 'Я люблю снег!' },
+    { de: 'Wie wird das Wetter morgen?', ru: 'Какая завтра будет погода?' },
+    { de: 'Heute Abend kann es Gewitter geben.', ru: 'Сегодня вечером возможна гроза.' },
+    { de: 'Es ist wieder so ein trüber Tag.', ru: 'Снова такой пасмурный день.' },
+    { de: 'Der Wind ist heute wirklich stark.', ru: 'Ветер сегодня действительно сильный.' },
+    { de: 'Es friert — pass auf dem Glatteis auf!', ru: 'Морозит — осторожно на льду!' },
+    { de: 'Was für eine Hitze! Ich schmelze.', ru: 'Какая жара! Я плавлюсь.' },
+    { de: 'Hast du die Wettervorhersage gesehen?', ru: 'Ты видел прогноз погоды?' },
+    { de: 'Im Winter wird es früh dunkel.', ru: 'Зимой рано темнеет.' },
+    { de: 'Nach dem Regen kommt Sonnenschein.', ru: 'После дождя выйдет солнце. (посл.)' },
+    { de: 'Es ist typisch für diese Jahreszeit.', ru: 'Это типично для этого времени года.' }
+  ]
+};
+
+const allTabs = ['wetter', 'vorhersage', 'richtung', 'temp', 'phrases', 'alltag'];
+const flippedState = {};
+allTabs.forEach(t => flippedState[t] = {});
+let ruMode = false;
+const audioCache = {};
+
+function sanitizeFilename(text) {
+  let clean = text
+    .toLowerCase()
+    .replace(/^(der |die |das |den |dem |des )/i, '')
+    .replace(/[ä]/g, 'ae')
+    .replace(/[ö]/g, 'oe')
+    .replace(/[ü]/g, 'ue')
+    .replace(/[ß]/g, 'ss')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '_');
+  const shortHash = Math.random().toString(36).substring(2, 6);
+  return `${clean.substring(0, 40)}_${shortHash}`;
+}
+
+function showStatus(msg) {
+  const el = document.getElementById('tts-status');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+async function speakDE(text, btn) {
+  const id = sanitizeFilename(text);
+  if (btn) {
+    btn.textContent = '⏳';
+    btn.disabled = true;
+  }
+  try {
+    if (audioCache[id]) {
+      playAudio(audioCache[id], btn);
+      return;
+    }
+    showStatus('Загрузка...');
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, id })
+    });
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    const { url, cached } = await response.json();
+    audioCache[id] = url;
+    showStatus(cached ? 'Из кэша ✓' : 'Сгенерировано ✓');
+    playAudio(url, btn);
+  } catch (error) {
+    console.error('TTS Error:', error);
+    showStatus('Ошибка, fallback');
+    if (btn) {
+      btn.textContent = '🔊';
+      btn.disabled = false;
+    }
+    fallbackSpeak(text, btn);
+  }
+}
+
+function playAudio(url, btn) {
+  const audio = new Audio(url);
+  audio.onplay = () => {
+    if (btn) {
+      btn.textContent = '🔊';
+      btn.classList.add('speaking');
+      btn.disabled = false;
+    }
+  };
+  audio.onended = () => {
+    if (btn) btn.classList.remove('speaking');
+  };
+  audio.onerror = () => {
+    if (btn) {
+      btn.textContent = '🔊';
+      btn.classList.remove('speaking');
+      btn.disabled = false;
+    }
+  };
+  audio.play().catch(() => {
+    if (btn) {
+      btn.textContent = '🔊';
+      btn.disabled = false;
+    }
+  });
+}
+
+function fallbackSpeak(text, btn) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'de-DE';
+  utt.rate = 0.88;
+  if (btn) {
+    btn.classList.add('speaking');
+    utt.onend = () => btn.classList.remove('speaking');
+    utt.onerror = () => btn.classList.remove('speaking');
+  }
+  window.speechSynthesis.speak(utt);
+}
+
+function buildGrid(tab) {
+  const isPhrase = tab === 'phrases' || tab === 'alltag';
+  const grid = document.getElementById('grid-' + tab);
+  grid.innerHTML = '';
+  flippedState[tab] = {};
+  data[tab].forEach((item, i) => {
+    const front = ruMode ? item.ru : item.de;
+    const back = ruMode ? item.de : item.ru;
+    const backSub = ruMode ? item.ru : item.de;
+    const wrap = document.createElement('div');
+    wrap.className = isPhrase ? 'phrase-wrap' : 'card-wrap';
+    wrap.style.position = 'relative';
+    wrap.innerHTML = `
+      <div class="card-inner">
+        <div class="card-front">
+          <div class="primary">${front}</div>
+          <div class="hint">нажми — увидишь перевод</div>
+        </div>
+        <div class="card-back">
+          <div class="secondary">${back}</div>
+          <div class="sub">${backSub}</div>
+        </div>
+      </div>`;
+    const btn = document.createElement('button');
+    btn.className = 'speak-btn';
+    btn.title = 'Произнести по-немецки';
+    btn.textContent = '🔊';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      speakDE(item.de, btn);
+    });
+    wrap.appendChild(btn);
+    wrap.addEventListener('click', () => {
+      wrap.classList.toggle('flipped');
+      flippedState[tab][i] = wrap.classList.contains('flipped');
+      updateCounter(tab);
+      updateProgress();
+    });
+    grid.appendChild(wrap);
+  });
+  updateCounter(tab);
+}
+
+function updateCounter(tab) {
+  const total = data[tab].length;
+  const seen = Object.values(flippedState[tab]).filter(Boolean).length;
+  document.getElementById('counter-' + tab).innerHTML = `Открыто: <b>${seen}</b> из ${total}`;
+}
+
+function updateProgress() {
+  let total = 0, seen = 0;
+  for (const tab of allTabs) {
+    total += data[tab].length;
+    seen += Object.values(flippedState[tab]).filter(Boolean).length;
+  }
+  document.getElementById('progress').style.width = (seen / total * 100) + '%';
+}
+
+function toggleDirection() {
+  ruMode = document.getElementById('dirSwitch').checked;
+  document.body.classList.toggle('ru-mode', ruMode);
+  document.getElementById('lbl-de').classList.toggle('active', !ruMode);
+  document.getElementById('lbl-ru').classList.toggle('active', ruMode);
+  allTabs.forEach(t => {
+    flippedState[t] = {};
+    buildGrid(t);
+  });
+  updateProgress();
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn')[allTabs.indexOf(tab)].classList.add('active');
+}
+
+allTabs.forEach(t => buildGrid(t));
+updateProgress();
 </script>
 </body>
 </html>
