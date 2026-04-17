@@ -268,7 +268,10 @@ allTabs.forEach(t => flippedState[t] = {});
 let ruMode = false;
 const audioCache = {};
 
+
+
 function sanitizeFilename(text) {
+  // Убираем артикли
   let clean = text
     .toLowerCase()
     .replace(/^(der |die |das |den |dem |des )/i, '')
@@ -278,10 +281,23 @@ function sanitizeFilename(text) {
     .replace(/[ß]/g, 'ss')
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '_');
-  const shortHash = Math.random().toString(36).substring(2, 6);
-  return `${clean.substring(0, 40)}_${shortHash}`;
+    .replace(/\s+/g, '_')
+    .substring(0, 50);
+  
+  // Детерминированный хеш на основе текста (не случайный!)
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    const char = text.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  const shortHash = Math.abs(hash).toString(36).substring(0, 4);
+  
+  return `${clean}_${shortHash}`;
 }
+
+
+
 
 function showStatus(msg) {
   const el = document.getElementById('tts-status');
