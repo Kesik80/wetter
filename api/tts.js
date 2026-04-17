@@ -9,7 +9,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Text and ID required' });
   }
 
-  // ТВОИ ДАННЫЕ (уже прописаны):
   const REPO_OWNER = 'kesik80';
   const REPO_NAME = 'wetter';
   
@@ -25,7 +24,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Проверяем, есть ли уже файл в репозитории
+    // 1. Проверяем кэш в GitHub
     const checkRes = await fetch(
       `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${AUDIO_PATH}`,
       {
@@ -39,14 +38,11 @@ export default async function handler(req, res) {
 
     if (checkRes.status === 200) {
       const fileData = await checkRes.json();
-      return res.json({ 
-        url: fileData.download_url, 
-        cached: true 
-      });
+      return res.json({ url: fileData.download_url, cached: true });
     }
 
-    // 2. Генерируем аудио через ElevenLabs
- const elevenRes = await fetch('https://api.elevenlabs.io/v1/text-to-speech/rDmv3mOhK6TnhYWckFaD', {
+    // 2. Генерируем через ElevenLabs
+    const elevenRes = await fetch('https://api.elevenlabs.io/v1/text-to-speech/rDmv3mOhK6TnhYWckFaD', {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
@@ -65,7 +61,11 @@ export default async function handler(req, res) {
 
     if (!elevenRes.ok) {
       const errorText = await elevenRes.text();
-      throw new Error(`ElevenLabs error: ${elevenRes.status}`);
+      return res.status(500).json({ 
+        error: 'ElevenLabs error', 
+        status: elevenRes.status,
+        details: errorText 
+      });
     }
 
     const audioBuffer = await elevenRes.arrayBuffer();
@@ -92,7 +92,10 @@ export default async function handler(req, res) {
 
     if (!createRes.ok) {
       const ghError = await createRes.text();
-      throw new Error(`GitHub error: ${createRes.status}`);
+      return res.status(500).json({ 
+        error: 'GitHub error', 
+        status: createRes.status 
+      });
     }
 
     const result = await createRes.json();
@@ -103,7 +106,6 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('TTS Error:', error);
     res.status(500).json({ error: error.message });
   }
 }
