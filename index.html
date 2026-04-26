@@ -361,50 +361,58 @@
     display: none;
   }
 
-  /* TTS engine switcher */
-  .tts-switcher {
+  /* TTS bar */
+  .tts-bar {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     justify-content: center;
-    margin: 0.5rem 0 0.2rem;
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.5);
+    flex-wrap: wrap;
+    padding: 0.45rem 1rem;
+    margin: 0.3rem auto 0;
+    max-width: 520px;
   }
-  .tts-switcher label { cursor: pointer; }
-  .tts-toggle {
-    position: relative;
-    display: inline-flex;
-    background: rgba(255,255,255,0.08);
+  .tts-label {
+    font-size: 0.9rem;
+    opacity: 0.55;
+  }
+  #voice-select {
+    background: rgba(255,255,255,0.07);
     border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 999px;
-    padding: 2px;
-    gap: 2px;
-  }
-  .tts-toggle button {
-    border: none;
-    background: none;
-    color: rgba(255,255,255,0.45);
-    font-size: 0.7rem;
-    padding: 3px 10px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .tts-toggle button.active {
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    color: #000;
-    font-weight: 600;
-  }
-  .tts-toggle button:hover:not(.active) {
+    border-radius: 10px;
     color: rgba(255,255,255,0.85);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    max-width: 200px;
+    flex: 1;
+    outline: none;
+    transition: border-color 0.2s;
   }
-  .google-note {
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.3);
-    text-align: center;
-    margin-bottom: 0.3rem;
+  #voice-select:focus { border-color: var(--accent); }
+  #voice-select option { background: #1a1a2e; color: #fff; }
+  .speed-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  #speed-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 90px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.15);
+    outline: none;
+    cursor: pointer;
+  }
+  #speed-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(79,195,247,0.6);
   }
 </style>
 </head>
@@ -414,6 +422,20 @@
   <h1>Das Wetter</h1>
   <p>Немецкая лексика — нажми на карточку, чтобы увидеть перевод</p>
 </header>
+
+<!-- TTS controls -->
+<div class="tts-bar">
+  <span class="tts-label">🔊</span>
+  <select id="voice-select" onchange="onVoiceChange(this.value)" title="Выбери немецкий голос">
+    <option>загрузка голосов…</option>
+  </select>
+  <div class="speed-wrap">
+    <span class="tts-label">🐢</span>
+    <input type="range" id="speed-range" min="0.5" max="1.3" step="0.1" value="0.88"
+           oninput="onSpeedChange(this.value)" title="Скорость речи">
+    <span class="tts-label">🐇</span>
+  </div>
+</div>
 
 <!-- Direction toggle -->
 <div class="dir-toggle">
@@ -475,14 +497,6 @@
   <div class="phrases-grid" id="grid-phrases"></div>
 </div>
 
-<div class="tts-switcher">
-  <span>🔊 Голос:</span>
-  <div class="tts-toggle">
-    <button id="btn-browser" class="active" onclick="setTtsEngine('browser')">🌐 Browser</button>
-    <button id="btn-google" onclick="setTtsEngine('google')">✨ Google</button>
-  </div>
-</div>
-<div class="google-note" id="google-note" style="display:none">Google Translate TTS · нужен интернет · женский голос</div>
 <div class="tts-warning" id="tts-warning">⚠️ Ваш браузер не поддерживает озвучку (Web Speech API)</div>
 <!-- РАЗГОВОРНЫЕ ФРАЗЫ -->
 <div class="section" id="tab-alltag">
@@ -637,23 +651,55 @@ function toggleDirection() {
 
 // ── Text-to-Speech ──────────────────────────────────────────────
 const ttsSupported = 'speechSynthesis' in window;
-let deVoice = null;
-let ttsEngine = 'browser'; // 'browser' | 'google'
-
-function setTtsEngine(engine) {
-  ttsEngine = engine;
-  document.getElementById('btn-browser').classList.toggle('active', engine === 'browser');
-  document.getElementById('btn-google').classList.toggle('active', engine === 'google');
-  document.getElementById('google-note').style.display = engine === 'google' ? 'block' : 'none';
-}
+let deVoices = [];      // all available German voices
+let selectedVoice = null;
+let ttsRate = 0.88;
 
 function initVoices() {
-  const voices = window.speechSynthesis.getVoices();
-  // prefer Edge Natural voices, then Google voices, then any German
-  deVoice = voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('natural')) ||
-            voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('google')) ||
-            voices.find(v => v.lang.startsWith('de')) || null;
+  const all = window.speechSynthesis.getVoices();
+  deVoices = all.filter(v => v.lang.startsWith('de'));
+  if (!deVoices.length) return;
+
+  // auto-select best: prefer Natural (Edge) > Google > first
+  selectedVoice =
+    deVoices.find(v => v.name.toLowerCase().includes('natural')) ||
+    deVoices.find(v => v.name.toLowerCase().includes('google')) ||
+    deVoices[0];
+
+  buildVoiceSelector();
 }
+
+function buildVoiceSelector() {
+  const sel = document.getElementById('voice-select');
+  if (!sel) return;
+  sel.innerHTML = '';
+  deVoices.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    // shorten long Edge names: "Microsoft Katja Online (Natural) - German (Germany)" → "Katja · Natural (Edge)"
+    let label = v.name
+      .replace(/Microsoft /i, '')
+      .replace(/Online \(Natural\)/i, '· Natural')
+      .replace(/- German.*$/i, '')
+      .replace(/Google /i, 'Google ')
+      .trim();
+    opt.textContent = label + (v.localService ? ' 📴' : ' 🌐');
+    if (v === selectedVoice) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.style.display = 'inline-block';
+  document.getElementById('voice-count').textContent =
+    deVoices.length + ' голос' + (deVoices.length > 4 ? 'ов' : deVoices.length > 1 ? 'а' : '');
+}
+
+function onVoiceChange(idx) {
+  selectedVoice = deVoices[idx] || deVoices[0];
+}
+
+function onSpeedChange(val) {
+  ttsRate = parseFloat(val);
+}
+
 if (ttsSupported) {
   window.speechSynthesis.onvoiceschanged = initVoices;
   initVoices();
@@ -662,29 +708,13 @@ if (ttsSupported) {
   if (w) { w.style.display = 'block'; setTimeout(() => w.style.display = 'none', 4000); }
 }
 
-function speakGoogle(text, btn) {
-  // Use Google Translate TTS endpoint (no API key needed)
-  const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=de&client=tw-ob&q=' + encodeURIComponent(text);
-  const audio = new Audio(url);
-  if (btn) {
-    btn.classList.add('speaking');
-    audio.onended = () => btn.classList.remove('speaking');
-    audio.onerror = () => {
-      btn.classList.remove('speaking');
-      // fallback to browser TTS if Google fails
-      speakBrowser(text, btn);
-    };
-  }
-  audio.play().catch(() => speakBrowser(text, btn));
-}
-
-function speakBrowser(text, btn) {
-  if (!ttsSupported) return;
+function speakDE(text, btn) {
+  if (!ttsSupported || !selectedVoice) return;
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'de-DE';
-  if (deVoice) utt.voice = deVoice;
-  utt.rate = 0.88;
+  utt.lang = selectedVoice.lang || 'de-DE';
+  utt.voice = selectedVoice;
+  utt.rate = ttsRate;
   utt.pitch = 1;
   if (btn) {
     btn.classList.add('speaking');
@@ -692,14 +722,6 @@ function speakBrowser(text, btn) {
     utt.onerror = () => btn.classList.remove('speaking');
   }
   window.speechSynthesis.speak(utt);
-}
-
-function speakDE(text, btn) {
-  if (ttsEngine === 'google') {
-    speakGoogle(text, btn);
-  } else {
-    speakBrowser(text, btn);
-  }
 }
 // ────────────────────────────────────────────────────────────────
 
