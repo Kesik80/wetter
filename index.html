@@ -2,100 +2,420 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
-<!-- PWA: скрывает адресную строку при запуске с экрана -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="wetter">
-
-<!-- Окрашивает строку статуса (часы/сигнал) и нижнюю панель -->
-<meta id="themeColorMeta" name="theme-color" content="#0a0a0f">
-
-<!-- Подключение манифеста и иконки -->
-<link rel="manifest" href="/icons/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-<link rel="icon" href="/icons/favicon.ico" sizes="32x32">
-<!-- favicon.ico — иконка для браузерной вкладки на десктопе.
-     Файл лежит в ZIP → icons/favicon.ico -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wetter — Карточки</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Onest:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0e1a;--surface:#111827;--card-front:#141d2e;--card-back:#0d1f3c;--accent:#4fc3f7;--accent2:#f472b6;--accent3:#34d399;--text:#e2e8f0;--muted:#64748b;--border:rgba(79,195,247,0.15)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Onest',sans-serif;min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;top:-30%;left:-20%;width:70%;height:70%;background:radial-gradient(ellipse,rgba(79,195,247,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
-body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:60%;height:60%;background:radial-gradient(ellipse,rgba(244,114,182,0.05) 0%,transparent 70%);pointer-events:none;z-index:0}
-header{position:relative;z-index:1;padding:2.5rem 2rem 1rem;text-align:center}
-header h1{font-family:'Unbounded',sans-serif;font-size:clamp(1.6rem,5vw,3rem);font-weight:900;letter-spacing:-0.02em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-header p{margin-top:0.4rem;color:var(--muted);font-size:0.85rem;font-weight:300}
-.dir-toggle{position:relative;z-index:1;display:flex;justify-content:center;align-items:center;gap:0.5rem;margin:0.8rem 0 1.2rem}
-.dir-label{font-size:0.78rem;font-weight:500;color:var(--muted);transition:color 0.2s}
-.dir-label.active{color:var(--accent)}
-.toggle-switch{position:relative;width:44px;height:24px;cursor:pointer}
-.toggle-switch input{display:none}
-.toggle-track{position:absolute;inset:0;background:rgba(79,195,247,0.15);border:1px solid rgba(79,195,247,0.3);border-radius:999px;transition:background 0.2s}
-.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--accent);border-radius:50%;transition:transform 0.25s cubic-bezier(0.4,0,0.2,1)}
-.toggle-switch input:checked~.toggle-track{background:rgba(244,114,182,0.15);border-color:rgba(244,114,182,0.4)}
-.toggle-switch input:checked~.toggle-thumb{transform:translateX(20px);background:var(--accent2)}
-.tabs{position:relative;z-index:1;display:flex;justify-content:center;gap:0.4rem;flex-wrap:wrap;padding:0 1rem 1.5rem}
-.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:'Onest',sans-serif;font-size:0.78rem;font-weight:500;padding:0.45rem 1rem;border-radius:999px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
-.tab-btn:hover{color:var(--accent);border-color:rgba(79,195,247,0.4)}
-.tab-btn.active{background:rgba(79,195,247,0.12);color:var(--accent);border-color:rgba(79,195,247,0.5)}
-.section{display:none;position:relative;z-index:1;padding:0 1.5rem 5rem;max-width:980px;margin:0 auto}
-.section.active{display:block}
-.section-title{font-family:'Unbounded',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:1.2rem;display:flex;align-items:center;gap:0.75rem}
-.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
-.flip-hint{text-align:center;color:var(--muted);font-size:0.72rem;margin-bottom:1rem}
-.flip-hint span{color:var(--accent)}
-.counter{text-align:center;font-size:0.72rem;color:var(--muted);margin-bottom:1rem}
-.counter b{color:var(--accent3)}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.9rem}
-.phrases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.9rem}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.card-wrap{perspective:800px;height:110px;cursor:pointer;animation:fadeIn 0.35s ease both}
-.phrase-wrap{perspective:800px;height:130px;cursor:pointer;animation:fadeIn 0.35s ease both}
-.card-wrap:nth-child(1),.phrase-wrap:nth-child(1){animation-delay:0.03s}
-.card-wrap:nth-child(2),.phrase-wrap:nth-child(2){animation-delay:0.06s}
-.card-wrap:nth-child(3),.phrase-wrap:nth-child(3){animation-delay:0.09s}
-.card-wrap:nth-child(4),.phrase-wrap:nth-child(4){animation-delay:0.12s}
-.card-wrap:nth-child(5),.phrase-wrap:nth-child(5){animation-delay:0.15s}
-.card-wrap:nth-child(6),.phrase-wrap:nth-child(6){animation-delay:0.18s}
-.card-wrap:nth-child(7),.phrase-wrap:nth-child(7){animation-delay:0.21s}
-.card-wrap:nth-child(8),.phrase-wrap:nth-child(8){animation-delay:0.24s}
-.card-wrap:nth-child(9),.phrase-wrap:nth-child(9){animation-delay:0.27s}
-.card-wrap:nth-child(10),.phrase-wrap:nth-child(10){animation-delay:0.30s}
-.card-wrap:nth-child(n+11),.phrase-wrap:nth-child(n+11){animation-delay:0.33s}
-.card-inner{width:100%;height:100%;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);transform-style:preserve-3d;position:relative}
-.card-wrap.flipped .card-inner,.phrase-wrap.flipped .card-inner{transform:rotateY(180deg)}
-.card-front,.card-back{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;border:1px solid var(--border);transition:border-color 0.2s}
-.card-wrap:hover .card-front,.card-wrap:hover .card-back,.phrase-wrap:hover .card-front,.phrase-wrap:hover .card-back{border-color:rgba(79,195,247,0.35)}
-.card-front{background:var(--card-front)}
-.card-back{background:var(--card-back);transform:rotateY(180deg);border-color:rgba(244,114,182,0.2)}
-.card-front .primary{font-family:'Unbounded',sans-serif;font-size:clamp(0.78rem,2.2vw,0.95rem);font-weight:700;color:var(--accent);text-align:center;line-height:1.35}
-.card-front .hint{font-size:0.62rem;color:var(--muted);margin-top:0.4rem;font-weight:300}
-.card-back .secondary{font-size:clamp(0.82rem,2.2vw,0.92rem);font-weight:400;color:var(--accent2);text-align:center;line-height:1.4}
-.card-back .sub{font-size:0.62rem;color:var(--muted);margin-top:0.35rem;font-family:'Unbounded',sans-serif;font-weight:400;text-align:center;line-height:1.3}
-body.ru-mode .card-front .primary{color:var(--accent2);font-family:'Onest',sans-serif;font-weight:500;font-size:clamp(0.82rem,2.2vw,0.95rem)}
-body.ru-mode .card-back .secondary{color:var(--accent);font-family:'Unbounded',sans-serif;font-weight:700;font-size:clamp(0.75rem,2vw,0.88rem)}
-body.ru-mode .card-back{border-color:rgba(79,195,247,0.2)}
-.progress-bar{position:fixed;bottom:0;left:0;z-index:10;width:100%;height:3px;background:rgba(255,255,255,0.05)}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.4s ease;width:0%}
-.speak-btn{position:absolute;top:6px;right:8px;z-index:10;background:none;border:none;cursor:pointer;padding:3px;line-height:1;font-size:0.95rem;opacity:0.45;transition:opacity 0.18s,transform 0.15s;filter:drop-shadow(0 0 3px rgba(79,195,247,0))}
-.speak-btn:hover{opacity:1;transform:scale(1.2);filter:drop-shadow(0 0 5px rgba(79,195,247,0.6))}
-.speak-btn.speaking{opacity:1;animation:pulse-speak 0.6s ease-in-out infinite alternate}
-.speak-btn:disabled{opacity:0.3;cursor:wait}
-@keyframes pulse-speak{from{filter:drop-shadow(0 0 3px rgba(79,195,247,0.4));transform:scale(1.05)}to{filter:drop-shadow(0 0 8px rgba(79,195,247,1));transform:scale(1.2)}}
-.tts-status{position:fixed;bottom:50px;left:50%;transform:translateX(-50%);background:rgba(79,195,247,0.15);border:1px solid rgba(79,195,247,0.4);color:var(--accent);font-size:0.72rem;padding:0.4rem 1rem;border-radius:999px;z-index:20;opacity:0;transition:opacity 0.3s}
-.tts-status.show{opacity:1}
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --card-front: #141d2e;
+    --card-back: #0d1f3c;
+    --accent: #4fc3f7;
+    --accent2: #f472b6;
+    --accent3: #34d399;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: rgba(79,195,247,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Onest', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -30%; left: -20%;
+    width: 70%; height: 70%;
+    background: radial-gradient(ellipse, rgba(79,195,247,0.06) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%; right: -10%;
+    width: 60%; height: 60%;
+    background: radial-gradient(ellipse, rgba(244,114,182,0.05) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  header {
+    position: relative; z-index: 1;
+    padding: 2.5rem 2rem 1rem;
+    text-align: center;
+  }
+  header h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p {
+    margin-top: 0.4rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 300;
+  }
+
+  /* Direction toggle */
+  .dir-toggle {
+    position: relative; z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.8rem 0 1.2rem;
+  }
+  .dir-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .dir-label.active { color: var(--accent); }
+
+  .toggle-switch {
+    position: relative;
+    width: 44px; height: 24px;
+    cursor: pointer;
+  }
+  .toggle-switch input { display: none; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: rgba(79,195,247,0.15);
+    border: 1px solid rgba(79,195,247,0.3);
+    border-radius: 999px;
+    transition: background 0.2s;
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+  .toggle-switch input:checked ~ .toggle-track { background: rgba(244,114,182,0.15); border-color: rgba(244,114,182,0.4); }
+  .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(20px); background: var(--accent2); }
+
+  /* Tabs */
+  .tabs {
+    position: relative; z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding: 0 1rem 1.5rem;
+  }
+  .tab-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Onest', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--accent); border-color: rgba(79,195,247,0.4); }
+  .tab-btn.active {
+    background: rgba(79,195,247,0.12);
+    color: var(--accent);
+    border-color: rgba(79,195,247,0.5);
+  }
+
+  /* Section */
+  .section {
+    display: none;
+    position: relative; z-index: 1;
+    padding: 0 1.5rem 5rem;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  .section.active { display: block; }
+
+  .section-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .flip-hint {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.72rem;
+    margin-bottom: 1rem;
+  }
+  .flip-hint span { color: var(--accent); }
+
+  .counter {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .counter b { color: var(--accent3); }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.9rem;
+  }
+
+  /* Phrases grid — wider cards */
+  .phrases-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.9rem;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-wrap {
+    perspective: 800px;
+    height: 110px;
+    cursor: pointer;
+    animation: fadeIn 0.35s ease both;
+  }
+  .phrase-wrap {
+    perspective: 800px;
+    height: 130px;
+    cursor: pointer;
+    animation: fadeIn 0.35s ease both;
+  }
+
+  .card-wrap:nth-child(1), .phrase-wrap:nth-child(1)   { animation-delay: 0.03s; }
+  .card-wrap:nth-child(2), .phrase-wrap:nth-child(2)   { animation-delay: 0.06s; }
+  .card-wrap:nth-child(3), .phrase-wrap:nth-child(3)   { animation-delay: 0.09s; }
+  .card-wrap:nth-child(4), .phrase-wrap:nth-child(4)   { animation-delay: 0.12s; }
+  .card-wrap:nth-child(5), .phrase-wrap:nth-child(5)   { animation-delay: 0.15s; }
+  .card-wrap:nth-child(6), .phrase-wrap:nth-child(6)   { animation-delay: 0.18s; }
+  .card-wrap:nth-child(7), .phrase-wrap:nth-child(7)   { animation-delay: 0.21s; }
+  .card-wrap:nth-child(8), .phrase-wrap:nth-child(8)   { animation-delay: 0.24s; }
+  .card-wrap:nth-child(9), .phrase-wrap:nth-child(9)   { animation-delay: 0.27s; }
+  .card-wrap:nth-child(10),.phrase-wrap:nth-child(10)  { animation-delay: 0.30s; }
+  .card-wrap:nth-child(n+11),.phrase-wrap:nth-child(n+11) { animation-delay: 0.33s; }
+
+  .card-inner {
+    width: 100%; height: 100%;
+    transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    transform-style: preserve-3d;
+    position: relative;
+  }
+  .card-wrap.flipped .card-inner,
+  .phrase-wrap.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-front, .card-back {
+    position: absolute; inset: 0;
+    border-radius: 14px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s;
+  }
+  .card-wrap:hover .card-front,
+  .card-wrap:hover .card-back,
+  .phrase-wrap:hover .card-front,
+  .phrase-wrap:hover .card-back {
+    border-color: rgba(79,195,247,0.35);
+  }
+
+  .card-front { background: var(--card-front); }
+  .card-back {
+    background: var(--card-back);
+    transform: rotateY(180deg);
+    border-color: rgba(244,114,182,0.2);
+  }
+
+  /* DE→RU mode: front=DE, back=RU */
+  .card-front .primary {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(0.78rem, 2.2vw, 0.95rem);
+    font-weight: 700;
+    color: var(--accent);
+    text-align: center;
+    line-height: 1.35;
+  }
+  .card-front .hint {
+    font-size: 0.62rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+    font-weight: 300;
+  }
+  .card-back .secondary {
+    font-size: clamp(0.82rem, 2.2vw, 0.92rem);
+    font-weight: 400;
+    color: var(--accent2);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .card-back .sub {
+    font-size: 0.62rem;
+    color: var(--muted);
+    margin-top: 0.35rem;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* RU→DE: front=RU (pink), back=DE (cyan) */
+  body.ru-mode .card-front .primary { color: var(--accent2); font-family: 'Onest', sans-serif; font-weight: 500; font-size: clamp(0.82rem, 2.2vw, 0.95rem); }
+  body.ru-mode .card-back .secondary { color: var(--accent); font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: clamp(0.75rem, 2vw, 0.88rem); }
+  body.ru-mode .card-back  { border-color: rgba(79,195,247,0.2); }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed;
+    bottom: 0; left: 0;
+    z-index: 10;
+    width: 100%; height: 3px;
+    background: rgba(255,255,255,0.05);
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* Speak button */
+  .speak-btn {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    z-index: 10;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 3px;
+    line-height: 1;
+    font-size: 0.95rem;
+    opacity: 0.45;
+    transition: opacity 0.18s, transform 0.15s;
+    filter: drop-shadow(0 0 3px rgba(79,195,247,0.0));
+  }
+  .speak-btn:hover {
+    opacity: 1;
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 5px rgba(79,195,247,0.6));
+  }
+  .speak-btn.speaking {
+    opacity: 1;
+    animation: pulse-speak 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes pulse-speak {
+    from { filter: drop-shadow(0 0 3px rgba(79,195,247,0.4)); transform: scale(1.05); }
+    to   { filter: drop-shadow(0 0 8px rgba(79,195,247,1));   transform: scale(1.2);  }
+  }
+
+  /* TTS not supported banner */
+  .tts-warning {
+    position: fixed;
+    bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(244,114,182,0.15);
+    border: 1px solid rgba(244,114,182,0.4);
+    color: #f472b6;
+    font-size: 0.72rem;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    z-index: 20;
+    display: none;
+  }
+
+  /* TTS engine switcher */
+  .tts-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 0.5rem 0 0.2rem;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.5);
+  }
+  .tts-switcher label { cursor: pointer; }
+  .tts-toggle {
+    position: relative;
+    display: inline-flex;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 999px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .tts-toggle button {
+    border: none;
+    background: none;
+    color: rgba(255,255,255,0.45);
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tts-toggle button.active {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    color: #000;
+    font-weight: 600;
+  }
+  .tts-toggle button:hover:not(.active) {
+    color: rgba(255,255,255,0.85);
+  }
+  .google-note {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    margin-bottom: 0.3rem;
+  }
 </style>
 </head>
 <body>
+
 <header>
   <h1>Das Wetter</h1>
   <p>Немецкая лексика — нажми на карточку, чтобы увидеть перевод</p>
 </header>
+
+<!-- Direction toggle -->
 <div class="dir-toggle">
   <span class="dir-label active" id="lbl-de">DE → RU</span>
   <label class="toggle-switch">
@@ -105,6 +425,7 @@ body.ru-mode .card-back{border-color:rgba(79,195,247,0.2)}
   </label>
   <span class="dir-label" id="lbl-ru">RU → DE</span>
 </div>
+
 <nav class="tabs">
   <button class="tab-btn active" onclick="showTab('wetter')">🌤 Погода</button>
   <button class="tab-btn" onclick="showTab('vorhersage')">📡 Прогноз</button>
@@ -113,47 +434,67 @@ body.ru-mode .card-back{border-color:rgba(79,195,247,0.2)}
   <button class="tab-btn" onclick="showTab('phrases')">💬 Фразы</button>
   <button class="tab-btn" onclick="showTab('alltag')">🗣 Разговор</button>
 </nav>
+
+<!-- ПОГОДА -->
 <div class="section active" id="tab-wetter">
   <div class="section-title">Das Wetter — Погода</div>
   <p class="flip-hint">Нажми на карточку — увидишь <span>перевод</span></p>
   <div class="counter" id="counter-wetter"></div>
   <div class="cards-grid" id="grid-wetter"></div>
 </div>
+
+<!-- ПРОГНОЗ -->
 <div class="section" id="tab-vorhersage">
   <div class="section-title">Die Wettervorhersage — Прогноз погоды</div>
   <p class="flip-hint">Нажми на карточку — увидишь <span>перевод</span></p>
   <div class="counter" id="counter-vorhersage"></div>
   <div class="cards-grid" id="grid-vorhersage"></div>
 </div>
+
+<!-- НАПРАВЛЕНИЯ -->
 <div class="section" id="tab-richtung">
   <div class="section-title">Die Himmelsrichtungen — Стороны света</div>
   <p class="flip-hint">Нажми на карточку — увидишь <span>перевод</span></p>
   <div class="counter" id="counter-richtung"></div>
   <div class="cards-grid" id="grid-richtung"></div>
 </div>
+
+<!-- ТЕМПЕРАТУРА -->
 <div class="section" id="tab-temp">
   <div class="section-title">Die Temperatur — Температура</div>
   <p class="flip-hint">Нажми на карточку — увидишь <span>перевод</span></p>
   <div class="counter" id="counter-temp"></div>
   <div class="cards-grid" id="grid-temp"></div>
 </div>
+
+<!-- ФРАЗЫ -->
 <div class="section" id="tab-phrases">
   <div class="section-title">Typische Phrasen — Типичные фразы прогноза</div>
   <p class="flip-hint">Нажми на карточку — увидишь <span>перевод</span></p>
   <div class="counter" id="counter-phrases"></div>
   <div class="phrases-grid" id="grid-phrases"></div>
 </div>
+
+<div class="tts-switcher">
+  <span>🔊 Голос:</span>
+  <div class="tts-toggle">
+    <button id="btn-browser" class="active" onclick="setTtsEngine('browser')">🌐 Browser</button>
+    <button id="btn-google" onclick="setTtsEngine('google')">✨ Google</button>
+  </div>
+</div>
+<div class="google-note" id="google-note" style="display:none">Google Translate TTS · нужен интернет · женский голос</div>
+<div class="tts-warning" id="tts-warning">⚠️ Ваш браузер не поддерживает озвучку (Web Speech API)</div>
+<!-- РАЗГОВОРНЫЕ ФРАЗЫ -->
 <div class="section" id="tab-alltag">
   <div class="section-title">Alltagsgespräche — Разговорные фразы</div>
   <p class="flip-hint">Нажми на карточку — увидишь <span>перевод</span></p>
   <div class="counter" id="counter-alltag"></div>
   <div class="phrases-grid" id="grid-alltag"></div>
 </div>
-<div class="tts-status" id="tts-status"></div>
-<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-<script>
-const API_URL = 'https://wetter-lernen.vercel.app/api/tts';
 
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<script>
 const data = {
   wetter: [
     { de: 'das Wetter', ru: 'погода' },
@@ -180,7 +521,7 @@ const data = {
     { de: 'die Feuchtigkeit', ru: 'влажность' },
     { de: 'es regnet', ru: 'идёт дождь' },
     { de: 'es schneit', ru: 'идёт снег' },
-    { de: 'es friert', ru: 'морозит' }
+    { de: 'es friert', ru: 'морозит' },
   ],
   vorhersage: [
     { de: 'die Wettervorhersage', ru: 'прогноз погоды' },
@@ -198,7 +539,7 @@ const data = {
     { de: 'morgen / übermorgen', ru: 'завтра / послезавтра' },
     { de: 'die Windgeschwindigkeit', ru: 'скорость ветра' },
     { de: 'die Windrichtung', ru: 'направление ветра' },
-    { de: 'die Sichtweite', ru: 'видимость' }
+    { de: 'die Sichtweite', ru: 'видимость' },
   ],
   richtung: [
     { de: 'die Himmelsrichtung', ru: 'сторона света' },
@@ -214,7 +555,7 @@ const data = {
     { de: 'östlich / westlich', ru: 'восточный / западный' },
     { de: 'aus dem Norden', ru: 'с севера' },
     { de: 'nach Süden', ru: 'на юг' },
-    { de: 'der Wind weht aus…', ru: 'ветер дует из…' }
+    { de: 'der Wind weht aus…', ru: 'ветер дует из…' },
   ],
   temp: [
     { de: 'Die Temperatur steigt', ru: 'Температура повышается' },
@@ -230,7 +571,7 @@ const data = {
     { de: 'der Temperaturrückgang', ru: 'падение температуры' },
     { de: 'schwanken', ru: 'колебаться' },
     { de: 'steigen', ru: 'подниматься, расти' },
-    { de: 'sinken', ru: 'снижаться, опускаться' }
+    { de: 'sinken', ru: 'снижаться, опускаться' },
   ],
   phrases: [
     { de: 'Es ist mit Regen zu rechnen.', ru: 'Следует ожидать дождя.' },
@@ -244,11 +585,11 @@ const data = {
     { de: 'Die Sonne scheint bei bis zu 22 Grad.', ru: 'Солнечно, температура до 22 градусов.' },
     { de: 'Nachts kühlt es auf 5 Grad ab.', ru: 'Ночью похолодает до 5 градусов.' },
     { de: 'Es ist mit Schneefall zu rechnen.', ru: 'Следует ожидать снегопада.' },
-    { de: 'Teils bewölкт, teils heiter.', ru: 'Местами облачно, местами ясно.' },
+    { de: 'Teils bewölkt, teils heiter.', ru: 'Местами облачно, местами ясно.' },
     { de: 'Eine Warmfront bringt milde Luft.', ru: 'Тёплый фронт приносит мягкий воздух.' },
     { de: 'Der Regen lässt im Laufe des Tages nach.', ru: 'Дождь стихает в течение дня.' },
     { de: 'Nebel löst sich am Vormittag auf.', ru: 'Туман рассеивается в первой половине дня.' },
-    { de: 'Es wird schwül und drückend.', ru: 'Становится душно и знойно.' }
+    { de: 'Es wird schwül und drückend.', ru: 'Становится душно и знойно.' },
   ],
   alltag: [
     { de: 'Das Wetter ist heute sehr schön!', ru: 'Сегодня очень хорошая погода!' },
@@ -274,122 +615,77 @@ const data = {
     { de: 'Hast du die Wettervorhersage gesehen?', ru: 'Ты видел прогноз погоды?' },
     { de: 'Im Winter wird es früh dunkel.', ru: 'Зимой рано темнеет.' },
     { de: 'Nach dem Regen kommt Sonnenschein.', ru: 'После дождя выйдет солнце. (посл.)' },
-    { de: 'Es ist typisch für diese Jahreszeit.', ru: 'Это типично для этого времени года.' }
-  ]
+    { de: 'Es ist typisch für diese Jahreszeit.', ru: 'Это типично для этого времени года.' },
+  ],
 };
 
-const allTabs = ['wetter', 'vorhersage', 'richtung', 'temp', 'phrases', 'alltag'];
+const allTabs = ['wetter','vorhersage','richtung','temp','phrases','alltag'];
 const flippedState = {};
 allTabs.forEach(t => flippedState[t] = {});
+
 let ruMode = false;
-const audioCache = {};
 
-
-
-function sanitizeFilename(text) {
-  // Убираем артикли
-  let clean = text
-    .toLowerCase()
-    .replace(/^(der |die |das |den |dem |des )/i, '')
-    .replace(/[ä]/g, 'ae')
-    .replace(/[ö]/g, 'oe')
-    .replace(/[ü]/g, 'ue')
-    .replace(/[ß]/g, 'ss')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '_')
-    .substring(0, 50);
-  
-  // Детерминированный хеш на основе текста (не случайный!)
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) {
-    const char = text.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  const shortHash = Math.abs(hash).toString(36).substring(0, 4);
-  
-  return `${clean}_${shortHash}`;
+function toggleDirection() {
+  ruMode = document.getElementById('dirSwitch').checked;
+  document.body.classList.toggle('ru-mode', ruMode);
+  document.getElementById('lbl-de').classList.toggle('active', !ruMode);
+  document.getElementById('lbl-ru').classList.toggle('active', ruMode);
+  // Rebuild all grids to swap front/back text
+  allTabs.forEach(t => { flippedState[t] = {}; buildGrid(t); });
+  updateProgress();
 }
 
+// ── Text-to-Speech ──────────────────────────────────────────────
+const ttsSupported = 'speechSynthesis' in window;
+let deVoice = null;
+let ttsEngine = 'browser'; // 'browser' | 'google'
 
-
-
-function showStatus(msg) {
-  const el = document.getElementById('tts-status');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
+function setTtsEngine(engine) {
+  ttsEngine = engine;
+  document.getElementById('btn-browser').classList.toggle('active', engine === 'browser');
+  document.getElementById('btn-google').classList.toggle('active', engine === 'google');
+  document.getElementById('google-note').style.display = engine === 'google' ? 'block' : 'none';
 }
 
-async function speakDE(text, btn) {
-  const id = sanitizeFilename(text);
-  if (btn) {
-    btn.textContent = '⏳';
-    btn.disabled = true;
-  }
-  try {
-    if (audioCache[id]) {
-      playAudio(audioCache[id], btn);
-      return;
-    }
-    showStatus('Загрузка...');
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, id })
-    });
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-    const { url, cached } = await response.json();
-    audioCache[id] = url;
-    showStatus(cached ? 'Из кэша ✓' : 'Сгенерировано ✓');
-    playAudio(url, btn);
-  } catch (error) {
-    console.error('TTS Error:', error);
-    showStatus('Ошибка, fallback');
-    if (btn) {
-      btn.textContent = '🔊';
-      btn.disabled = false;
-    }
-    fallbackSpeak(text, btn);
-  }
+function initVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  // prefer Edge Natural voices, then Google voices, then any German
+  deVoice = voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('natural')) ||
+            voices.find(v => v.lang.startsWith('de') && v.name.toLowerCase().includes('google')) ||
+            voices.find(v => v.lang.startsWith('de')) || null;
+}
+if (ttsSupported) {
+  window.speechSynthesis.onvoiceschanged = initVoices;
+  initVoices();
+} else {
+  const w = document.getElementById('tts-warning');
+  if (w) { w.style.display = 'block'; setTimeout(() => w.style.display = 'none', 4000); }
 }
 
-function playAudio(url, btn) {
+function speakGoogle(text, btn) {
+  // Use Google Translate TTS endpoint (no API key needed)
+  const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=de&client=tw-ob&q=' + encodeURIComponent(text);
   const audio = new Audio(url);
-  audio.onplay = () => {
-    if (btn) {
-      btn.textContent = '🔊';
-      btn.classList.add('speaking');
-      btn.disabled = false;
-    }
-  };
-  audio.onended = () => {
-    if (btn) btn.classList.remove('speaking');
-  };
-  audio.onerror = () => {
-    if (btn) {
-      btn.textContent = '🔊';
+  if (btn) {
+    btn.classList.add('speaking');
+    audio.onended = () => btn.classList.remove('speaking');
+    audio.onerror = () => {
       btn.classList.remove('speaking');
-      btn.disabled = false;
-    }
-  };
-  audio.play().catch(() => {
-    if (btn) {
-      btn.textContent = '🔊';
-      btn.disabled = false;
-    }
-  });
+      // fallback to browser TTS if Google fails
+      speakBrowser(text, btn);
+    };
+  }
+  audio.play().catch(() => speakBrowser(text, btn));
 }
 
-function fallbackSpeak(text, btn) {
-  if (!('speechSynthesis' in window)) return;
+function speakBrowser(text, btn) {
+  if (!ttsSupported) return;
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = 'de-DE';
+  if (deVoice) utt.voice = deVoice;
   utt.rate = 0.88;
+  utt.pitch = 1;
   if (btn) {
     btn.classList.add('speaking');
     utt.onend = () => btn.classList.remove('speaking');
@@ -398,15 +694,26 @@ function fallbackSpeak(text, btn) {
   window.speechSynthesis.speak(utt);
 }
 
+function speakDE(text, btn) {
+  if (ttsEngine === 'google') {
+    speakGoogle(text, btn);
+  } else {
+    speakBrowser(text, btn);
+  }
+}
+// ────────────────────────────────────────────────────────────────
+
 function buildGrid(tab) {
-  const isPhrase = tab === 'phrases' || tab === 'alltag';
+  const isPhrase = tab === 'phrases';
   const grid = document.getElementById('grid-' + tab);
   grid.innerHTML = '';
   flippedState[tab] = {};
+
   data[tab].forEach((item, i) => {
     const front = ruMode ? item.ru : item.de;
-    const back = ruMode ? item.de : item.ru;
+    const back  = ruMode ? item.de : item.ru;
     const backSub = ruMode ? item.ru : item.de;
+
     const wrap = document.createElement('div');
     wrap.className = isPhrase ? 'phrase-wrap' : 'card-wrap';
     wrap.style.position = 'relative';
@@ -421,15 +728,19 @@ function buildGrid(tab) {
           <div class="sub">${backSub}</div>
         </div>
       </div>`;
-    const btn = document.createElement('button');
-    btn.className = 'speak-btn';
-    btn.title = 'Произнести по-немецки';
-    btn.textContent = '🔊';
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      speakDE(item.de, btn);
-    });
-    wrap.appendChild(btn);
+
+    if (ttsSupported) {
+      const btn = document.createElement('button');
+      btn.className = 'speak-btn';
+      btn.title = 'Произнести по-немецки';
+      btn.textContent = '🔊';
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speakDE(item.de, btn);
+      });
+      wrap.appendChild(btn);
+    }
+
     wrap.addEventListener('click', () => {
       wrap.classList.toggle('flipped');
       flippedState[tab][i] = wrap.classList.contains('flipped');
@@ -438,13 +749,15 @@ function buildGrid(tab) {
     });
     grid.appendChild(wrap);
   });
+
   updateCounter(tab);
 }
 
 function updateCounter(tab) {
   const total = data[tab].length;
   const seen = Object.values(flippedState[tab]).filter(Boolean).length;
-  document.getElementById('counter-' + tab).innerHTML = `Открыто: <b>${seen}</b> из ${total}`;
+  document.getElementById('counter-' + tab).innerHTML =
+    `Открыто: <b>${seen}</b> из ${total}`;
 }
 
 function updateProgress() {
@@ -456,18 +769,6 @@ function updateProgress() {
   document.getElementById('progress').style.width = (seen / total * 100) + '%';
 }
 
-function toggleDirection() {
-  ruMode = document.getElementById('dirSwitch').checked;
-  document.body.classList.toggle('ru-mode', ruMode);
-  document.getElementById('lbl-de').classList.toggle('active', !ruMode);
-  document.getElementById('lbl-ru').classList.toggle('active', ruMode);
-  allTabs.forEach(t => {
-    flippedState[t] = {};
-    buildGrid(t);
-  });
-  updateProgress();
-}
-
 function showTab(tab) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -476,157 +777,6 @@ function showTab(tab) {
 }
 
 allTabs.forEach(t => buildGrid(t));
-updateProgress();
 </script>
-<script>
-
-// ── 1. Динамический theme-color (верх / низ телефона) ──
-function setThemeColor(color) {
-  const meta = document.getElementById('themeColorMeta');
-  if (meta) meta.setAttribute('content', color);
-}
-
-// Реагируем на системную смену день ↔ ночь
-const darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
-darkMQ.addEventListener('change', e => {
-  setThemeColor(e.matches ? '#0a0a0f' : '#ffffff');
-});
-setThemeColor(darkMQ.matches ? '#0a0a0f' : '#ffffff');
-
-// Если у тебя есть своя кнопка темы — вызывай вручную:
-// setThemeColor('#0a0a0f');  // тёмная
-// setThemeColor('#ffffff'); // светлая
-
-
-// ── 2. Баннер установки (Android + iOS — один баннер для всех) ──
-
-// Не показывать если уже закрыли менее 7 дней назад
-const _dismissed = localStorage.getItem('pwa-install-dismissed');
-if (_dismissed && Date.now() - parseInt(_dismissed) < 7 * 24 * 60 * 60 * 1000) {
-  // тихо пропускаем
-} else {
-
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isInStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
-  let deferredPrompt = null;
-
-  if (!isInStandalone) {
-
-    // Создаём один баннер
-    function createBanner(btnLabel, onBtnClick) {
-      const b = document.createElement('div');
-      b.id = 'pwa-install-banner';
-      b.style.cssText = 'position:fixed;bottom:20px;left:12px;right:12px;'
-        + 'background:#0a0a0f;color:#fff;border-radius:18px;'
-        + 'padding:14px 16px;display:flex;align-items:center;gap:12px;'
-        + 'box-shadow:0 8px 32px rgba(0,0,0,.45);z-index:9000;'
-        + 'font-family:sans-serif;animation:pwaSlideUp .4s cubic-bezier(.32,1,.23,1);';
-      b.innerHTML = `
-        <span style="font-size:28px;flex-shrink:0">📲</span>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:600">wetter</div>
-          <div style="font-size:12px;opacity:.7;margin-top:2px">Добавить на экран</div>
-        </div>
-        <button id="pwa-action-btn" style="flex-shrink:0;padding:8px 16px;background:#fff;
-          color:#0a0a0f;border:none;border-radius:12px;font-size:13px;
-          font-weight:700;cursor:pointer">${btnLabel}</button>
-        <button id="pwa-close-btn" style="flex-shrink:0;background:none;border:none;
-          color:#fff;font-size:18px;cursor:pointer;opacity:.65;padding:2px 4px">✕</button>
-      `;
-      // Добавляем анимацию
-      if (!document.getElementById('pwa-style')) {
-        const s = document.createElement('style');
-        s.id = 'pwa-style';
-        s.textContent = '@keyframes pwaSlideUp{from{transform:translateY(120%);opacity:0}to{transform:translateY(0);opacity:1}}';
-        document.head.appendChild(s);
-      }
-      document.body.appendChild(b);
-      document.getElementById('pwa-action-btn').onclick = onBtnClick;
-      document.getElementById('pwa-close-btn').onclick = () => {
-        b.remove();
-        localStorage.setItem('pwa-install-dismissed', Date.now());
-      };
-    }
-
-    if (isIOS) {
-      // iOS Safari — показать баннер с кнопкой «Как?»
-      const isSafari = /safari/i.test(navigator.userAgent) && !/chrome|crios|fxios/i.test(navigator.userAgent);
-      if (isSafari) {
-        setTimeout(() => {
-          createBanner('Как?', () => showIOSGuide());
-        }, 2000);
-      }
-    } else {
-      // Android/Desktop — ждём beforeinstallprompt
-      window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();
-        deferredPrompt = e;
-        setTimeout(() => {
-          createBanner('Установить', async () => {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            deferredPrompt = null;
-            document.getElementById('pwa-install-banner')?.remove();
-          });
-        }, 1500);
-      });
-      window.addEventListener('appinstalled', () => {
-        document.getElementById('pwa-install-banner')?.remove();
-      });
-    }
-  }
-}
-
-// ── 3. Модальное окно с инструкцией для iOS ──
-function showIOSGuide() {
-  const ov = document.createElement('div');
-  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;'
-    + 'background:rgba(0,0,0,.8);display:flex;align-items:flex-end;padding:12px;';
-  ov.innerHTML = `
-    <div style="background:#1c1c1e;border-radius:22px;padding:24px;width:100%;
-      border:1px solid rgba(255,255,255,.12)">
-      <div style="font-size:17px;font-weight:700;margin-bottom:20px;
-        text-align:center;color:#fff">Установка на iPhone</div>
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <div style="display:flex;align-items:center;gap:14px">
-          <div style="width:36px;height:36px;background:#0a0a0f;border-radius:10px;
-            display:flex;align-items:center;justify-content:center;
-            font-size:16px;font-weight:700;color:#fff;flex-shrink:0">1</div>
-          <div style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.4">
-            Нажми кнопку <strong style="color:#fff">«Поделиться»</strong>
-            <span style="font-size:18px"> ⎙ </span> внизу Safari
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px">
-          <div style="width:36px;height:36px;background:#0a0a0f;border-radius:10px;
-            display:flex;align-items:center;justify-content:center;
-            font-size:16px;font-weight:700;color:#fff;flex-shrink:0">2</div>
-          <div style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.4">
-            Выбери <strong style="color:#fff">«На экран «Домой»»</strong>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px">
-          <div style="width:36px;height:36px;background:#0a0a0f;border-radius:10px;
-            display:flex;align-items:center;justify-content:center;
-            font-size:16px;font-weight:700;color:#fff;flex-shrink:0">3</div>
-          <div style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.4">
-            Нажми <strong style="color:#fff">«Добавить»</strong>
-          </div>
-        </div>
-      </div>
-      <button onclick="this.closest('[style*=inset]').remove()"
-        style="width:100%;margin-top:22px;padding:14px;background:#0a0a0f;
-        color:#fff;border:none;border-radius:14px;font-size:15px;
-        font-weight:600;font-family:sans-serif;cursor:pointer">Понятно</button>
-    </div>
-  `;
-  document.body.appendChild(ov);
-  ov.onclick = e => { if (e.target === ov) ov.remove(); };
-}
-
-</script>
-
 </body>
 </html>
