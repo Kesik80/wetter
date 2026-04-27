@@ -211,8 +211,10 @@ function setEngine(engine) {
 
 function setVoice(id) {
   ttsVoiceId = id;
-  // Clear audio cache when switching voice
-  Object.keys(audioCache).forEach(k => { if (!k.startsWith('_')) delete audioCache[k]; });
+  // Clear ALL cache so new voice is always used
+  for (const k in audioCache) delete audioCache[k];
+  const voiceName = document.getElementById('voice-select').selectedOptions[0]?.text.split('·')[0].trim() || '';
+  showStatus(`Голос: ${voiceName}`);
 }
 
 function setSpeed(val) {
@@ -418,15 +420,20 @@ async function speakDE(text, btn) {
       return;
     }
     showStatus('Загрузка...');
+    const payload = { text, id: cacheKey, voiceId: ttsVoiceId };
+    console.log('[TTS] Request:', payload);
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, id: cacheKey, voiceId: ttsVoiceId })
+      body: JSON.stringify(payload)
     });
     if (!response.ok) throw new Error(`API error: ${response.status}`);
-    const { url, cached } = await response.json();
+    const data = await response.json();
+    console.log('[TTS] Response:', data);
+    const { url, cached, voice } = data;
     audioCache[cacheKey] = url;
-    showStatus(cached ? 'Из кэша ✓' : 'Сгенерировано ✓');
+    const voiceName = document.getElementById('voice-select').selectedOptions[0]?.text.split('·')[0].trim() || '';
+    showStatus(cached ? `Кэш · ${voiceName} ✓` : `Сгенерировано · ${voiceName} ✓`);
     playAudio(url, btn);
   } catch (error) {
     console.error('TTS Error:', error);
@@ -692,6 +699,6 @@ function showIOSGuide() {
 }
 
 </script>
-
+<script src="console.js"></script>
 </body>
 </html>
