@@ -5,13 +5,15 @@ const REPO_OWNER = 'kesik80';
 const REPO_NAME  = 'wetter';
 
 // Разрешённые бесплатные голоса ElevenLabs
+// Только Default voices — доступны на бесплатном плане
+// Voice Library voices (Sam, Rachel и др.) — требуют платного плана
 const ALLOWED_VOICES = {
   'EXAVITQu4vr4xnSDxMaL': 'Bella',
   'pNInz6obpgDQGcFmaJgB': 'Adam',
   'ErXwobaYiN019PkySvjV': 'Antoni',
   'VR6AewLTigWG4xSOukaG': 'Arnold',
-  'yoZ06aMxZJJ28mfd3POQ': 'Sam',
-  '21m00Tcm4TlvDq8ikWAM': 'Rachel',
+  'TX3LPaxmHKxFdv7VOQHJ': 'Liam',
+  'XB0fDUnXU5powFXDhCwa': 'Charlotte',
 };
 
 const DEFAULT_VOICE = 'EXAVITQu4vr4xnSDxMaL'; // Bella
@@ -27,21 +29,29 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { text, id, voiceId } = req.body;
+  const { text, voiceId } = req.body;
 
-  if (!text || !id) {
-    return res.status(400).json({ error: 'Text and ID required' });
+  if (!text) {
+    return res.status(400).json({ error: 'Text required' });
   }
 
   // Валидация голоса — только из белого списка
   const safeVoiceId = ALLOWED_VOICES[voiceId] ? voiceId : DEFAULT_VOICE;
   const voiceName   = ALLOWED_VOICES[safeVoiceId].toLowerCase();
 
-  // Безопасное имя файла
-  const safeId = id.replace(/[^a-z0-9_-]/gi, '').substring(0, 80);
+  // Читаемое имя файла из текста: "die Wettervorhersage" → "die_Wettervorhersage_(Liam).mp3"
+  function makeReadableFilename(text, voice) {
+    const clean = text
+      .trim()
+      .replace(/\s+/g, '_')          // пробелы → подчёркивания
+      .replace(/[^a-zA-Z0-9_äöüÄÖÜß]/g, '') // убираем спецсимволы кроме немецких букв
+      .substring(0, 60);
+    return `${clean}_(${voice}).mp3`;
+  }
 
-  // Путь кэша включает имя голоса: audio/bella/das_wetter_xxxx.mp3
-  const AUDIO_PATH = `audio/${voiceName}/${safeId}.mp3`;
+  const filename = makeReadableFilename(text, ALLOWED_VOICES[safeVoiceId]);
+  // Путь: audio/bella/die_Wettervorhersage_(Bella).mp3
+  const AUDIO_PATH = `audio/${voiceName}/${filename}`;
 
   const GITHUB_TOKEN  = process.env.GITHUB_TOKEN;
   const ELEVEN_API_KEY = process.env.ELEVENLABS_API_KEY;
@@ -144,3 +154,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: error.message });
   }
 }
+
