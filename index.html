@@ -117,12 +117,27 @@ body.ru-mode .card-back{border-color:rgba(79,195,247,0.2)}
     <button class="tts-engine-btn" id="btn-browser" onclick="setEngine('browser')">🌐 Browser</button>
   </div>
   <select class="tts-voice-select" id="voice-select" onchange="setVoice(this.value)" title="Голос ElevenLabs">
-    <option value="EXAVITQu4vr4xnSDxMaL">Bella · женский</option>
-    <option value="pNInz6obpgDQGcFmaJgB">Adam · мужской</option>
-    <option value="ErXwobaYiN019PkySvjV">Antoni · мужской</option>
-    <option value="VR6AewLTigWG4xSOukaG">Arnold · глубокий</option>
-    <option value="yoZ06aMxZJJ28mfd3POQ">Sam · молодой</option>
-    <option value="21m00Tcm4TlvDq8ikWAM">Rachel · чёткий</option>
+    <optgroup label="── Default ──">
+      <option value="CwhRBWXzGAHq8TQ4Fs17">Roger · мужской</option>
+      <option value="FGY2WhTYpPnrIDTdsKH5">Laura · женский</option>
+      <option value="TX3LPaxmHKxFdv7VOQHJ">Liam · мужской</option>
+      <option value="XrExE9yKIg1WjnnlVkGX">Matilda · женский</option>
+      <option value="bIHbv24MWmeRgasZH58o">Will · мужской</option>
+      <option value="cgSgspJ2msm6clMCkdW9">Jessica · женский</option>
+      <option value="cjVigY5qzO86Huf0OWal">Eric · мужской</option>
+      <option value="nPczCjzI2devNBz1zQrb">Brian · мужской</option>
+      <option value="onwK4e9ZLuTAKqWW03F9">Daniel · мужской</option>
+      <option value="pFZP5JQG7iQjIQuC4Bku">Lily · женский</option>
+      <option value="pqHfZKP75CvOlQylNhV4">Bill · мужской</option>
+    </optgroup>
+    <optgroup label="── My Voices ──">
+      <option value="AnvlJBAqSLDzEevYr9Ap">Ava · женский</option>
+      <option value="rDmv3mOhK6TnhYWckFaD">Felix Serenitas · мужской 🇩🇪</option>
+      <option value="J5U94vRbS9drxnawJcoc">Herr Gruber · мужской 🇩🇪</option>
+      <option value="7eVMgwCnXydb3CikjV7a">Lea · женский 🇩🇪</option>
+      <option value="dCnu06FiOZma2KVNUoPZ">Mila Winter · женский 🇩🇪</option>
+      <option value="lx8LAX2EUAKftVz0Dk5z">Juan Schubert Pro · мужской 🇩🇪</option>
+    </optgroup>
   </select>
   <div class="tts-speed">🐢
     <input type="range" id="speed-range" min="0.5" max="1.2" step="0.1" value="0.9" oninput="setSpeed(this.value)">
@@ -190,7 +205,7 @@ const API_URL = 'https://wetter-lernen.vercel.app/api/tts';
 
 // ── TTS State ──────────────────────────────────────────────────
 let ttsEngine = 'elevenlabs';   // 'elevenlabs' | 'browser'
-let ttsVoiceId = 'EXAVITQu4vr4xnSDxMaL'; // Bella default
+let ttsVoiceId = 'CwhRBWXzGAHq8TQ4Fs17'; // Roger default
 let ttsRate = 0.9;
 
 function setEngine(engine) {
@@ -220,6 +235,38 @@ function setVoice(id) {
 function setSpeed(val) {
   ttsRate = parseFloat(val);
 }
+
+// ── Загрузка голосов ElevenLabs с сервера ─────────────────────
+const VOICES_URL = 'https://wetter-lernen.vercel.app/api/voices';
+
+async function loadVoices() {
+  const sel = document.getElementById('voice-select');
+  try {
+    const res = await fetch(VOICES_URL);
+    if (!res.ok) throw new Error('voices API error');
+    const { voices } = await res.json();
+    if (!voices || !voices.length) return;
+
+    sel.innerHTML = '';
+    voices.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.voice_id;
+      // Формат: "Bella · female · american"
+      const parts = [v.name];
+      if (v.gender) parts.push(v.gender === 'female' ? 'женский' : v.gender === 'male' ? 'мужской' : v.gender);
+      if (v.accent) parts.push(v.accent);
+      opt.textContent = parts.join(' · ');
+      if (v.voice_id === ttsVoiceId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    document.getElementById('tts-quota').textContent = 'ElevenLabs · 17 голосов · ~10 000 символов/мес';
+  } catch (e) {
+    console.warn('Не удалось загрузить голоса:', e);
+    // fallback — оставляем Bella
+  }
+}
+loadVoices();
+// ──────────────────────────────────────────────────────────────
 
 // Browser TTS voice init
 let browserVoice = null;
@@ -411,8 +458,8 @@ async function speakDE(text, btn) {
     browserSpeak(text, btn);
     return;
   }
-  // ElevenLabs via API
-  const cacheKey = ttsVoiceId + '_' + sanitizeFilename(text);
+  // ElevenLabs via API — cacheKey не используется для пути, сервер сам строит имя файла
+  const cacheKey = ttsVoiceId + '|' + text;
   if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
   try {
     if (audioCache[cacheKey]) {
@@ -420,7 +467,7 @@ async function speakDE(text, btn) {
       return;
     }
     showStatus('Загрузка...');
-    const payload = { text, id: cacheKey, voiceId: ttsVoiceId };
+    const payload = { text, voiceId: ttsVoiceId };
     console.log('[TTS] Request:', payload);
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -699,6 +746,6 @@ function showIOSGuide() {
 }
 
 </script>
-<script src="console.js"></script>
+
 </body>
 </html>
