@@ -5,18 +5,29 @@ const REPO_OWNER = 'kesik80';
 const REPO_NAME  = 'wetter';
 
 // Разрешённые бесплатные голоса ElevenLabs
-// Только Default voices — доступны на бесплатном плане
-// Voice Library voices (Sam, Rachel и др.) — требуют платного плана
+// Default voices — гарантированно доступны на free tier
 const ALLOWED_VOICES = {
-  'EXAVITQu4vr4xnSDxMaL': 'Bella',
-  'pNInz6obpgDQGcFmaJgB': 'Adam',
-  'ErXwobaYiN019PkySvjV': 'Antoni',
-  'VR6AewLTigWG4xSOukaG': 'Arnold',
+  'CwhRBWXzGAHq8TQ4Fs17': 'Roger',
+  'FGY2WhTYpPnrIDTdsKH5': 'Laura',
   'TX3LPaxmHKxFdv7VOQHJ': 'Liam',
-  'XB0fDUnXU5powFXDhCwa': 'Charlotte',
+  'XrExE9yKIg1WjnnlVkGX': 'Matilda',
+  'bIHbv24MWmeRgasZH58o': 'Will',
+  'cgSgspJ2msm6clMCkdW9': 'Jessica',
+  'cjVigY5qzO86Huf0OWal': 'Eric',
+  'nPczCjzI2devNBz1zQrb': 'Brian',
+  'onwK4e9ZLuTAKqWW03F9': 'Daniel',
+  'pFZP5JQG7iQjIQuC4Bku': 'Lily',
+  'pqHfZKP75CvOlQylNhV4': 'Bill',
+  // My Voices (сохранённые — работают если аккаунт их поддерживает)
+  'AnvlJBAqSLDzEevYr9Ap': 'Ava',
+  'rDmv3mOhK6TnhYWckFaD': 'Felix Serenitas',
+  'J5U94vRbS9drxnawJcoc': 'Herr Gruber',
+  '7eVMgwCnXydb3CikjV7a': 'Lea',
+  'dCnu06FiOZma2KVNUoPZ': 'Mila Winter',
+  'lx8LAX2EUAKftVz0Dk5z': 'Juan Schubert Pro',
 };
 
-const DEFAULT_VOICE = 'EXAVITQu4vr4xnSDxMaL'; // Bella
+const DEFAULT_VOICE = 'CwhRBWXzGAHq8TQ4Fs17'; // Roger
 
 export default async function handler(req, res) {
   // CORS
