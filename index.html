@@ -504,7 +504,7 @@ async function speakDE(text, btn) {
     console.log('[TTS] Response:', data);
     const { url, cached, voice } = data;
     audioCache[cacheKey] = url;
-    const voiceName = document.getElementById('voice-select').selectedOptions[0]?.text.split('·')[0].trim() || '';
+    const voiceName = (document.getElementById('voice-label')?.textContent || '').split('·')[0].trim();
     showStatus(cached ? `Кэш · ${voiceName} ✓` : `Сгенерировано · ${voiceName} ✓`);
     playAudio(url, btn);
   } catch (error) {
@@ -790,13 +790,7 @@ function showIOSGuide() {
     <div class="voice-opt" onclick="setVoice('onwK4e9ZLuTAKqWW03F9','Daniel · мужской')">Daniel · мужской</div>
     <div class="voice-opt" onclick="setVoice('pFZP5JQG7iQjIQuC4Bku','Lily · женский')">Lily · женский</div>
     <div class="voice-opt" onclick="setVoice('pqHfZKP75CvOlQylNhV4','Bill · мужской')">Bill · мужской</div>
-    <div class="voice-group-label">My Voices 🇩🇪</div>
-    <div class="voice-opt" onclick="setVoice('AnvlJBAqSLDzEevYr9Ap','Ava · женский')">Ava · женский</div>
-    <div class="voice-opt" onclick="setVoice('rDmv3mOhK6TnhYWckFaD','Felix Serenitas 🇩🇪')">Felix Serenitas 🇩🇪</div>
-    <div class="voice-opt" onclick="setVoice('J5U94vRbS9drxnawJcoc','Herr Gruber 🇩🇪')">Herr Gruber 🇩🇪</div>
-    <div class="voice-opt" onclick="setVoice('7eVMgwCnXydb3CikjV7a','Lea · женский 🇩🇪')">Lea · женский 🇩🇪</div>
-    <div class="voice-opt" onclick="setVoice('dCnu06FiOZma2KVNUoPZ','Mila Winter 🇩🇪')">Mila Winter 🇩🇪</div>
-    <div class="voice-opt" onclick="setVoice('lx8LAX2EUAKftVz0Dk5z','Juan Schubert Pro 🇩🇪')">Juan Schubert Pro 🇩🇪</div>
+
   </div>
 </div>
 <script src="console.js"></script>
