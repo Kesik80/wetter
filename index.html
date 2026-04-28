@@ -94,9 +94,33 @@ body.ru-mode .card-back{border-color:rgba(79,195,247,0.2)}
 .tts-engine-btn{border:none;background:none;color:rgba(255,255,255,0.4);font-family:'Onest',sans-serif;font-size:0.68rem;font-weight:500;padding:4px 12px;border-radius:999px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
 .tts-engine-btn.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#000;font-weight:700}
 .tts-engine-btn:hover:not(.active){color:rgba(255,255,255,0.8)}
-.tts-voice-select{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:rgba(255,255,255,0.8);font-family:'Onest',sans-serif;font-size:0.68rem;padding:5px 10px;cursor:pointer;outline:none;transition:border-color 0.2s;max-width:180px}
-.tts-voice-select:focus{border-color:var(--accent)}
-.tts-voice-select option{background:#111827;color:#fff}
+.voice-dropdown{position:relative;flex:1;max-width:200px}
+.voice-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:rgba(255,255,255,0.85);font-family:'Onest',sans-serif;font-size:0.7rem;padding:6px 10px;cursor:pointer;transition:border-color 0.2s}
+.voice-trigger:hover{border-color:var(--accent)}
+.voice-arrow{font-size:0.65rem;opacity:0.5;transition:transform 0.2s}
+.voice-dropdown.open .voice-arrow{transform:rotate(180deg)}
+/* Bottom sheet */
+#voice-backdrop{display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.5)}
+#voice-sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:9999;
+  background:#0f172a;
+  border-radius:20px 20px 0 0;
+  border-top:1px solid rgba(255,255,255,0.1);
+  transform:translateY(100%);
+  transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);
+  max-height:70vh;
+  display:flex;flex-direction:column;
+}
+#voice-sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.2);margin:10px auto 4px}
+.sheet-title{text-align:center;font-size:0.7rem;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.06em;text-transform:uppercase;padding:0 16px 8px}
+.sheet-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1}
+.voice-group-label{padding:8px 16px 4px;font-size:0.6rem;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.3);text-transform:uppercase;border-top:1px solid rgba(255,255,255,0.07)}
+.voice-group-label:first-child{border-top:none}
+.voice-opt{padding:13px 20px;font-size:0.85rem;color:rgba(255,255,255,0.75);cursor:pointer;transition:background 0.12s;border-bottom:1px solid rgba(255,255,255,0.04)}
+.voice-opt:active{background:rgba(79,195,247,0.12)}
+.voice-opt.selected{color:var(--accent);font-weight:600}
+.voice-opt.selected::after{content:' ✓';opacity:0.7}
 .tts-speed{display:flex;align-items:center;gap:5px;font-size:0.75rem;color:rgba(255,255,255,0.3)}
 #speed-range{-webkit-appearance:none;appearance:none;width:70px;height:3px;border-radius:3px;background:rgba(255,255,255,0.12);outline:none;cursor:pointer}
 #speed-range::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 5px rgba(79,195,247,0.5)}
@@ -116,29 +140,13 @@ body.ru-mode .card-back{border-color:rgba(79,195,247,0.2)}
     <button class="tts-engine-btn active" id="btn-eleven" onclick="setEngine('elevenlabs')">✨ ElevenLabs</button>
     <button class="tts-engine-btn" id="btn-browser" onclick="setEngine('browser')">🌐 Browser</button>
   </div>
-  <select class="tts-voice-select" id="voice-select" onchange="setVoice(this.value)" title="Голос ElevenLabs">
-    <optgroup label="── Default ──">
-      <option value="CwhRBWXzGAHq8TQ4Fs17">Roger · мужской</option>
-      <option value="FGY2WhTYpPnrIDTdsKH5">Laura · женский</option>
-      <option value="TX3LPaxmHKxFdv7VOQHJ">Liam · мужской</option>
-      <option value="XrExE9yKIg1WjnnlVkGX">Matilda · женский</option>
-      <option value="bIHbv24MWmeRgasZH58o">Will · мужской</option>
-      <option value="cgSgspJ2msm6clMCkdW9">Jessica · женский</option>
-      <option value="cjVigY5qzO86Huf0OWal">Eric · мужской</option>
-      <option value="nPczCjzI2devNBz1zQrb">Brian · мужской</option>
-      <option value="onwK4e9ZLuTAKqWW03F9">Daniel · мужской</option>
-      <option value="pFZP5JQG7iQjIQuC4Bku">Lily · женский</option>
-      <option value="pqHfZKP75CvOlQylNhV4">Bill · мужской</option>
-    </optgroup>
-    <optgroup label="── My Voices ──">
-      <option value="AnvlJBAqSLDzEevYr9Ap">Ava · женский</option>
-      <option value="rDmv3mOhK6TnhYWckFaD">Felix Serenitas · мужской 🇩🇪</option>
-      <option value="J5U94vRbS9drxnawJcoc">Herr Gruber · мужской 🇩🇪</option>
-      <option value="7eVMgwCnXydb3CikjV7a">Lea · женский 🇩🇪</option>
-      <option value="dCnu06FiOZma2KVNUoPZ">Mila Winter · женский 🇩🇪</option>
-      <option value="lx8LAX2EUAKftVz0Dk5z">Juan Schubert Pro · мужской 🇩🇪</option>
-    </optgroup>
-  </select>
+  <!-- Voice trigger button -->
+  <div class="voice-dropdown" id="voice-dropdown">
+    <button class="voice-trigger" id="voice-trigger" onclick="openVoiceSheet()">
+      <span id="voice-label">Roger · мужской</span>
+      <span class="voice-arrow">▾</span>
+    </button>
+  </div>
   <div class="tts-speed">🐢
     <input type="range" id="speed-range" min="0.5" max="1.2" step="0.1" value="0.9" oninput="setSpeed(this.value)">
   🐇</div>
@@ -212,24 +220,42 @@ function setEngine(engine) {
   ttsEngine = engine;
   document.getElementById('btn-eleven').classList.toggle('active', engine === 'elevenlabs');
   document.getElementById('btn-browser').classList.toggle('active', engine === 'browser');
-  const sel = document.getElementById('voice-select');
+  const sel = document.getElementById('voice-dropdown');
   const quota = document.getElementById('tts-quota');
   if (engine === 'browser') {
     sel.style.display = 'none';
     quota.textContent = 'Browser TTS · офлайн · голос зависит от устройства';
     initBrowserVoices();
   } else {
-    sel.style.display = '';
+    sel.style.display = 'block';
     quota.textContent = 'ElevenLabs · бесплатно ~10 000 символов/мес';
   }
 }
 
-function setVoice(id) {
+function setVoice(id, label) {
   ttsVoiceId = id;
-  // Clear ALL cache so new voice is always used
   for (const k in audioCache) delete audioCache[k];
-  const voiceName = document.getElementById('voice-select').selectedOptions[0]?.text.split('·')[0].trim() || '';
-  showStatus(`Голос: ${voiceName}`);
+  // Update trigger label
+  const lbl = document.getElementById('voice-label');
+  if (lbl && label) lbl.textContent = label;
+  // Mark selected
+  document.querySelectorAll('.voice-opt').forEach(el => {
+    el.classList.toggle('selected', el.getAttribute('onclick').includes(id));
+  });
+  closeVoiceSheet();
+  showStatus(`Голос: ${(label || id).split('·')[0].trim()}`);
+}
+
+function openVoiceSheet() {
+  document.getElementById('voice-sheet').classList.add('open');
+  document.getElementById('voice-backdrop').style.display = 'block';
+  document.getElementById('voice-dropdown').classList.add('open');
+}
+
+function closeVoiceSheet() {
+  document.getElementById('voice-sheet').classList.remove('open');
+  document.getElementById('voice-backdrop').style.display = 'none';
+  document.getElementById('voice-dropdown').classList.remove('open');
 }
 
 function setSpeed(val) {
@@ -265,7 +291,6 @@ async function loadVoices() {
     // fallback — оставляем Bella
   }
 }
-loadVoices();
 // ──────────────────────────────────────────────────────────────
 
 // Browser TTS voice init
@@ -701,7 +726,7 @@ if (_dismissed && Date.now() - parseInt(_dismissed) < 7 * 24 * 60 * 60 * 1000) {
 // ── 3. Модальное окно с инструкцией для iOS ──
 function showIOSGuide() {
   const ov = document.createElement('div');
-  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;'
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10000;'
     + 'background:rgba(0,0,0,.8);display:flex;align-items:flex-end;padding:12px;';
   ov.innerHTML = `
     <div style="background:#1c1c1e;border-radius:22px;padding:24px;width:100%;
@@ -747,5 +772,32 @@ function showIOSGuide() {
 
 </script>
 
+<!-- Voice bottom sheet -->
+<div id="voice-backdrop" onclick="closeVoiceSheet()"></div>
+<div id="voice-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Выбери голос</div>
+  <div class="sheet-scroll">
+    <div class="voice-group-label">Default</div>
+    <div class="voice-opt" onclick="setVoice('CwhRBWXzGAHq8TQ4Fs17','Roger · мужской')">Roger · мужской</div>
+    <div class="voice-opt" onclick="setVoice('FGY2WhTYpPnrIDTdsKH5','Laura · женский')">Laura · женский</div>
+    <div class="voice-opt" onclick="setVoice('TX3LPaxmHKxFdv7VOQHJ','Liam · мужской')">Liam · мужской</div>
+    <div class="voice-opt" onclick="setVoice('XrExE9yKIg1WjnnlVkGX','Matilda · женский')">Matilda · женский</div>
+    <div class="voice-opt" onclick="setVoice('bIHbv24MWmeRgasZH58o','Will · мужской')">Will · мужской</div>
+    <div class="voice-opt" onclick="setVoice('cgSgspJ2msm6clMCkdW9','Jessica · женский')">Jessica · женский</div>
+    <div class="voice-opt" onclick="setVoice('cjVigY5qzO86Huf0OWal','Eric · мужской')">Eric · мужской</div>
+    <div class="voice-opt" onclick="setVoice('nPczCjzI2devNBz1zQrb','Brian · мужской')">Brian · мужской</div>
+    <div class="voice-opt" onclick="setVoice('onwK4e9ZLuTAKqWW03F9','Daniel · мужской')">Daniel · мужской</div>
+    <div class="voice-opt" onclick="setVoice('pFZP5JQG7iQjIQuC4Bku','Lily · женский')">Lily · женский</div>
+    <div class="voice-opt" onclick="setVoice('pqHfZKP75CvOlQylNhV4','Bill · мужской')">Bill · мужской</div>
+    <div class="voice-group-label">My Voices 🇩🇪</div>
+    <div class="voice-opt" onclick="setVoice('AnvlJBAqSLDzEevYr9Ap','Ava · женский')">Ava · женский</div>
+    <div class="voice-opt" onclick="setVoice('rDmv3mOhK6TnhYWckFaD','Felix Serenitas 🇩🇪')">Felix Serenitas 🇩🇪</div>
+    <div class="voice-opt" onclick="setVoice('J5U94vRbS9drxnawJcoc','Herr Gruber 🇩🇪')">Herr Gruber 🇩🇪</div>
+    <div class="voice-opt" onclick="setVoice('7eVMgwCnXydb3CikjV7a','Lea · женский 🇩🇪')">Lea · женский 🇩🇪</div>
+    <div class="voice-opt" onclick="setVoice('dCnu06FiOZma2KVNUoPZ','Mila Winter 🇩🇪')">Mila Winter 🇩🇪</div>
+    <div class="voice-opt" onclick="setVoice('lx8LAX2EUAKftVz0Dk5z','Juan Schubert Pro 🇩🇪')">Juan Schubert Pro 🇩🇪</div>
+  </div>
+</div>
 </body>
 </html>
